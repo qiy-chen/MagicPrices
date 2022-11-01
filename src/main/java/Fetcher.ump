@@ -1,0 +1,121 @@
+namespace com.MagicPrices.model;
+class FetcherSystem
+{
+	depend java.time.LocalDateTime;
+    autounique id;
+  LocalDateTime currentDate=LocalDateTime.now();
+  1 <@>- 0..1 MainMenu;
+  1 <@>- * Fetcher;
+  1 <@>- * Card;
+  1 <@>- * Reader;
+  1 <@>- * Price;
+    public LocalDateTime updateCurrentDate()
+  {
+  	currentDate=LocalDateTime.now();
+    return currentDate;
+  }
+}
+
+class MainMenu
+{
+depend java.time.LocalDateTime;
+  autounique mainId;
+     dataPath="./";
+   1-- 0..1 Reader;
+   
+}
+
+class Card
+{
+depend java.time.LocalDateTime;
+  autounique cardId;
+    name;
+setName;
+* -- 0..1 Fetcher;
+  1 -- * Price;
+  * -- 0..1 Reader;
+}
+
+class Fetcher
+{
+ depend java.time.LocalDateTime;
+ depend com.gargoylesoftware.htmlunit.BrowserVersion;
+depend  com.gargoylesoftware.htmlunit.WebClient;
+depend  com.gargoylesoftware.htmlunit.html.DomElement;
+depend  com.gargoylesoftware.htmlunit.html.HtmlPage;
+depend java.io.IOException;
+  autounique fetcherId;
+  LocalDateTime fetchDate;
+  url;
+  double conversionRateUSDToCAD;
+ 0..1 -- 1 MainMenu;
+ 
+ 
+ public void init(boolean isInCAD) {
+    WebClient webClient = new WebClient(BrowserVersion.CHROME);
+    //Shutdown some error messages
+    webClient.getOptions().setCssEnabled(false);
+    webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
+    webClient.getOptions().setThrowExceptionOnScriptError(false);
+    webClient.getOptions().setPrintContentOnFailingStatusCode(false);
+
+    try {
+       HtmlPage page = webClient.getPage(url);
+
+       webClient.getCurrentWindow().getJobManager().removeAllJobs();
+       webClient.close();
+       //Extract information
+       List<DomElement> ListOfCards = page.getByXPath("//div[@class='hawk-results__item-name']");
+       for (DomElement card: ListOfCards) {
+         String cardName;
+         String cardSet;
+         boolean isNM;
+         boolean isInStock;
+         double concurrentPrice=0;
+         double cardPrice=0;
+         DomElement cardNameHTML = card.getFirstByXPath("//h4[@class='hawk-results__hawk-contentTitle']");
+         cardName = cardNameHTML.asNormalizedText();
+         DomElement cardSetHTML = card.getFirstByXPath("//p[@class='hawk-results__hawk-contentSubtitle']");
+         cardSet = cardSetHTML.asNormalizedText();
+         
+         //find the card currently displayed on the website
+         DomElement cardDisplayed;
+         List<DomElement> ListOfCandidateCard = card.getByXPath("//span[@class='retailPrice hawkPrice']");
+         for (DomElement candidateCard: ListOfCandidateCard) {
+           if (candidateCard.isDisplayed()) cardPrice = Double.parseDouble(candidateCard.asNormalizedText());
+         }
+         
+         DomElement cardSetHTML = card.getFirstByXPath("//h4[@class='hawk-results__hawk-contentSubtitle']");
+         cardSet = cardSetHTML.asNormalizedText();
+         DomElement cardSetHTML = card.getFirstByXPath("//h4[@class='hawk-results__hawk-contentSubtitle']");
+         cardSet = cardSetHTML.asNormalizedText();
+       }
+       
+
+    } catch (IOException e) {
+       System.out.println("An error occurred: " + e);
+       webClient.close();
+    }
+  }
+ 
+}
+
+class Reader
+{
+  autounique readerId;
+}
+
+class Price
+{
+	depend java.time.LocalDateTime;
+	autounique priceId;
+  double amount;
+  double concurrentPrice;
+  boolean isNM;
+  boolean isInStock;
+  boolean isFoil;
+  LocalDateTime fetchDate;
+}
+
+
+

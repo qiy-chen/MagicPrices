@@ -1,0 +1,2 @@
+# MagicPrices
+ Magic Prices Fetcher
