@@ -4,13 +4,15 @@
 package com.MagicPrices.model;
 import java.time.LocalDateTime;
 import com.gargoylesoftware.htmlunit.BrowserVersion;
+import com.gargoylesoftware.htmlunit.SilentCssErrorHandler;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.javascript.SilentJavaScriptErrorListener;
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
 
-// line 39 "../../../Fetcher.ump"
+// line 51 "../../../Fetcher.ump"
 public class Fetcher
 {
 
@@ -35,13 +37,14 @@ public class Fetcher
   //Fetcher Associations
   private MainMenu mainMenu;
   private FetcherSystem fetcherSystem;
-  private List<Card> cards;
+  private Card card;
+  private CardDatabase cardDatabase;
 
   //------------------------
   // CONSTRUCTOR
   //------------------------
 
-  public Fetcher(LocalDateTime aFetchDate, String aUrl, double aConversionRateUSDToCAD, MainMenu aMainMenu, FetcherSystem aFetcherSystem)
+  public Fetcher(LocalDateTime aFetchDate, String aUrl, double aConversionRateUSDToCAD, MainMenu aMainMenu, FetcherSystem aFetcherSystem, CardDatabase aCardDatabase)
   {
     fetchDate = aFetchDate;
     url = aUrl;
@@ -57,7 +60,11 @@ public class Fetcher
     {
       throw new RuntimeException("Unable to create fetcher due to fetcherSystem. See http://manual.umple.org?RE002ViolationofAssociationMultiplicity.html");
     }
-    cards = new ArrayList<Card>();
+    boolean didAddCardDatabase = setCardDatabase(aCardDatabase);
+    if (!didAddCardDatabase)
+    {
+      throw new RuntimeException("Unable to create fetcher due to cardDatabase. See http://manual.umple.org?RE002ViolationofAssociationMultiplicity.html");
+    }
   }
 
   //------------------------
@@ -117,35 +124,21 @@ public class Fetcher
   {
     return fetcherSystem;
   }
-  /* Code from template association_GetMany */
-  public Card getCard(int index)
+  /* Code from template association_GetOne */
+  public Card getCard()
   {
-    Card aCard = cards.get(index);
-    return aCard;
+    return card;
   }
 
-  public List<Card> getCards()
+  public boolean hasCard()
   {
-    List<Card> newCards = Collections.unmodifiableList(cards);
-    return newCards;
-  }
-
-  public int numberOfCards()
-  {
-    int number = cards.size();
-    return number;
-  }
-
-  public boolean hasCards()
-  {
-    boolean has = cards.size() > 0;
+    boolean has = card != null;
     return has;
   }
-
-  public int indexOfCard(Card aCard)
+  /* Code from template association_GetOne */
+  public CardDatabase getCardDatabase()
   {
-    int index = cards.indexOf(aCard);
-    return index;
+    return cardDatabase;
   }
   /* Code from template association_SetOneToOptionalOne */
   public boolean setMainMenu(MainMenu aNewMainMenu)
@@ -194,76 +187,66 @@ public class Fetcher
     wasSet = true;
     return wasSet;
   }
-  /* Code from template association_MinimumNumberOfMethod */
-  public static int minimumNumberOfCards()
+  /* Code from template association_SetOptionalOneToOptionalOne */
+  public boolean setCard(Card aNewCard)
   {
-    return 0;
-  }
-  /* Code from template association_AddManyToOptionalOne */
-  public boolean addCard(Card aCard)
-  {
-    boolean wasAdded = false;
-    if (cards.contains(aCard)) { return false; }
-    Fetcher existingFetcher = aCard.getFetcher();
-    if (existingFetcher == null)
+    boolean wasSet = false;
+    if (aNewCard == null)
     {
-      aCard.setFetcher(this);
+      Card existingCard = card;
+      card = null;
+      
+      if (existingCard != null && existingCard.getFetcher() != null)
+      {
+        existingCard.setFetcher(null);
+      }
+      wasSet = true;
+      return wasSet;
     }
-    else if (!this.equals(existingFetcher))
-    {
-      existingFetcher.removeCard(aCard);
-      addCard(aCard);
-    }
-    else
-    {
-      cards.add(aCard);
-    }
-    wasAdded = true;
-    return wasAdded;
-  }
 
-  public boolean removeCard(Card aCard)
-  {
-    boolean wasRemoved = false;
-    if (cards.contains(aCard))
+    Card currentCard = getCard();
+    if (currentCard != null && !currentCard.equals(aNewCard))
     {
-      cards.remove(aCard);
-      aCard.setFetcher(null);
-      wasRemoved = true;
+      currentCard.setFetcher(null);
     }
-    return wasRemoved;
-  }
-  /* Code from template association_AddIndexControlFunctions */
-  public boolean addCardAt(Card aCard, int index)
-  {  
-    boolean wasAdded = false;
-    if(addCard(aCard))
-    {
-      if(index < 0 ) { index = 0; }
-      if(index > numberOfCards()) { index = numberOfCards() - 1; }
-      cards.remove(aCard);
-      cards.add(index, aCard);
-      wasAdded = true;
-    }
-    return wasAdded;
-  }
 
-  public boolean addOrMoveCardAt(Card aCard, int index)
-  {
-    boolean wasAdded = false;
-    if(cards.contains(aCard))
+    card = aNewCard;
+    Fetcher existingFetcher = aNewCard.getFetcher();
+
+    if (!equals(existingFetcher))
     {
-      if(index < 0 ) { index = 0; }
-      if(index > numberOfCards()) { index = numberOfCards() - 1; }
-      cards.remove(aCard);
-      cards.add(index, aCard);
-      wasAdded = true;
-    } 
-    else 
-    {
-      wasAdded = addCardAt(aCard, index);
+      aNewCard.setFetcher(this);
     }
-    return wasAdded;
+    wasSet = true;
+    return wasSet;
+  }
+  /* Code from template association_SetOneToOptionalOne */
+  public boolean setCardDatabase(CardDatabase aNewCardDatabase)
+  {
+    boolean wasSet = false;
+    if (aNewCardDatabase == null)
+    {
+      //Unable to setCardDatabase to null, as fetcher must always be associated to a cardDatabase
+      return wasSet;
+    }
+    
+    Fetcher existingFetcher = aNewCardDatabase.getFetcher();
+    if (existingFetcher != null && !equals(existingFetcher))
+    {
+      //Unable to setCardDatabase, the current cardDatabase already has a fetcher, which would be orphaned if it were re-assigned
+      return wasSet;
+    }
+    
+    CardDatabase anOldCardDatabase = cardDatabase;
+    cardDatabase = aNewCardDatabase;
+    cardDatabase.setFetcher(this);
+
+    if (anOldCardDatabase != null)
+    {
+      anOldCardDatabase.setFetcher(null);
+    }
+    wasSet = true;
+    return wasSet;
   }
 
   public void delete()
@@ -280,52 +263,78 @@ public class Fetcher
     {
       placeholderFetcherSystem.removeFetcher(this);
     }
-    while( !cards.isEmpty() )
+    if (card != null)
     {
-      cards.get(0).setFetcher(null);
+      card.setFetcher(null);
+    }
+    CardDatabase existingCardDatabase = cardDatabase;
+    cardDatabase = null;
+    if (existingCardDatabase != null)
+    {
+      existingCardDatabase.setFetcher(null);
     }
   }
 
-  // line 54 "../../../Fetcher.ump"
-   public void init(boolean isInCAD){
-    WebClient webClient = new WebClient(BrowserVersion.CHROME);
+  // line 69 "../../../Fetcher.ump"
+   public void fetchAll(){
+    WebClient webClient = new WebClient(BrowserVersion.BEST_SUPPORTED);
     //Shutdown some error messages
     webClient.getOptions().setCssEnabled(false);
     webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
     webClient.getOptions().setThrowExceptionOnScriptError(false);
     webClient.getOptions().setPrintContentOnFailingStatusCode(false);
+    webClient.getOptions().setJavaScriptEnabled(true);
+    webClient.setJavaScriptErrorListener(new SilentJavaScriptErrorListener()); webClient.setCssErrorHandler(new SilentCssErrorHandler());
 
+    
+    
     try {
        HtmlPage page = webClient.getPage(url);
-
+       webClient.waitForBackgroundJavaScript(3_000);
        webClient.getCurrentWindow().getJobManager().removeAllJobs();
        webClient.close();
        //Extract information
+       System.out.println(page.asNormalizedText());
        List<DomElement> ListOfCards = page.getByXPath("//div[@class='hawk-results__item-name']");
+       
        for (DomElement card: ListOfCards) {
+         System.out.println("Found a card! Now analyzing it");
          String cardName;
          String cardSet;
-         boolean isNM;
-         boolean isInStock;
-         boolean isFoil;
          double concurrentPrice=0;
-         double cardPrice=0;
          DomElement cardNameHTML = card.getFirstByXPath("//h4[@class='hawk-results__hawk-contentTitle']");
          cardName = cardNameHTML.asNormalizedText();
          DomElement cardSetHTML = card.getFirstByXPath("//p[@class='hawk-results__hawk-contentSubtitle']");
          cardSet = cardSetHTML.asNormalizedText();
          
-         //find the card currently displayed on the website
-         DomElement cardDisplayed;
-         List<DomElement> ListOfCandidateCard = card.getByXPath("//span[@class='retailPrice hawkPrice']");
-         for (DomElement candidateCard: ListOfCandidateCard) {
-           if (candidateCard.isDisplayed()) cardPrice = Double.parseDouble(candidateCard.asNormalizedText());
+         Card cardObject = new Card(Card.convertToCardId(cardName, cardSet), cardName, cardSet, cardDatabase, fetcherSystem);
+         
+         //find the card price currently displayed on the website
+         List<DomElement> ListOfPrices = card.getByXPath("//span[@class='retailPrice hawkPrice']");
+         List<DomElement> ListOfStockStatus = card.getByXPath("//span[@class='hawkStock']");
+         for (int i=0; i<=3; i++) {
+           String strPrice = ListOfPrices.get(i).asNormalizedText();
+           double price = Double.parseDouble(strPrice.trim().replaceAll("CAD $ ", ""));
+           boolean isInStock = !(ListOfStockStatus.get(i).asNormalizedText() == "Out of Stock");
+           
+           boolean isNM = (i == 0 || i == 3);
+           boolean isFoil = (i >= 2);
+           cardObject.addPrice(price, concurrentPrice, isNM, isInStock, isFoil, fetchDate, fetcherSystem);
+           
          }
          
-         DomElement cardConditionHTML = card.getFirstByXPath("//h4[@class='hawk-results__hawk-contentSubtitle']");
-         //isNM = cardConditionHTML.asNormalizedText();
-         DomElement cardStockHTML = card.getFirstByXPath("//h4[@class='hawk-results__hawk-contentSubtitle']");
-         //isInStock = cardStockHTML.asNormalizedText();
+         int index = cardDatabase.indexOfCard(cardObject);
+         if (index > -1) {
+           Card existingCard = cardDatabase.getCard(index);
+           //Transfer all prices from fetched card to existing card
+           while (cardObject.hasPrices()) {
+             Price price = cardObject.getPrice(0);
+             existingCard.addPrice(price);
+             cardObject.removePrice(price);
+           }
+         }
+         else cardDatabase.addCard(cardObject);
+         
        }
        
 
@@ -344,6 +353,8 @@ public class Fetcher
             "conversionRateUSDToCAD" + ":" + getConversionRateUSDToCAD()+ "]" + System.getProperties().getProperty("line.separator") +
             "  " + "fetchDate" + "=" + (getFetchDate() != null ? !getFetchDate().equals(this)  ? getFetchDate().toString().replaceAll("  ","    ") : "this" : "null") + System.getProperties().getProperty("line.separator") +
             "  " + "mainMenu = "+(getMainMenu()!=null?Integer.toHexString(System.identityHashCode(getMainMenu())):"null") + System.getProperties().getProperty("line.separator") +
-            "  " + "fetcherSystem = "+(getFetcherSystem()!=null?Integer.toHexString(System.identityHashCode(getFetcherSystem())):"null");
+            "  " + "fetcherSystem = "+(getFetcherSystem()!=null?Integer.toHexString(System.identityHashCode(getFetcherSystem())):"null") + System.getProperties().getProperty("line.separator") +
+            "  " + "card = "+(getCard()!=null?Integer.toHexString(System.identityHashCode(getCard())):"null") + System.getProperties().getProperty("line.separator") +
+            "  " + "cardDatabase = "+(getCardDatabase()!=null?Integer.toHexString(System.identityHashCode(getCardDatabase())):"null");
   }
 }

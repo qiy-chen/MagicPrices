@@ -2,11 +2,14 @@ package com.MagicPrices.controller;
 
 import com.MagicPrices.MagicPricesApplication;
 import com.MagicPrices.model.Card;
+import com.MagicPrices.model.CardDatabase;
 import com.MagicPrices.model.Fetcher;
 import com.MagicPrices.model.FetcherSystem;
 import com.MagicPrices.model.MainMenu;
+import com.MagicPrices.model.Price;
 import com.gargoylesoftware.htmlunit.*;
 import com.gargoylesoftware.htmlunit.html.*;
+import com.gargoylesoftware.htmlunit.javascript.SilentJavaScriptErrorListener;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -15,6 +18,7 @@ public class FetcherController {
 
   private static FetcherSystem system = MainController.getFetcherSystem();
   private static MainMenu menu = MainController.getMainMenu();
+  private static CardDatabase database = MainController.getCardDatabase();
   private static double conversionRateUSDToCAD;
   private static LocalDateTime currentTime;
   private static boolean preferedInStock = true;
@@ -23,8 +27,16 @@ public class FetcherController {
   private static boolean fastMode = false;
   
   public FetcherController() {}
-  
-  public static Card findCardByCardName(String cardName, boolean aIsInStock, boolean aPreferedNMCondition, boolean aPreferedFoilCondition,boolean aFastMode) {
+  /**
+   * Fetch and upgrade prices related to a card by name
+   * @param cardName - Name of the card to be updated
+   * @param aIsInStock - Search with the option "the card is in stock"
+   * @param aPreferedNMCondition - Search with the option "the card is NM"
+   * @param aPreferedFoilCondition - Search with the option "the card is Foil"
+   * @param aFastMode - Search only the first page if true
+   * @return Card object that is being updated
+   */
+  public static Card fetchCardByCardName(String cardName, boolean aIsInStock, boolean aPreferedNMCondition, boolean aPreferedFoilCondition,boolean aFastMode) {
     preferedInStock = aIsInStock;
     preferedNMCondition = aPreferedNMCondition;
     preferedFoilCondition = aPreferedFoilCondition;
@@ -38,25 +50,44 @@ public class FetcherController {
       if (updateCurrentTime() == null) return null;
     }
     System.out.println("Seeking now "+cardName);
-    int pagenb = 99;
+    int pagenb = 1;
     String url = "https://www.facetofacegames.com/search/?keyword="+cardName+"&pg="+pagenb+"&tab=Magic&product%20type=Singles";
     if (preferedInStock) url+="&child_inventory_level=1";
     if (preferedNMCondition) url+="&option_condition=NM";
     else url+="&option_condition=PL";
     if (preferedFoilCondition) url+="&option_finish=Foil";
     else url+="&option_finish=Non-Foil";
-    System.out.println("Seeking card at "+url+"\tConversion: "+conversionRateUSDToCAD+"\tTime: "+currentTime.toString());
+   
+    url = url.replaceAll(" ", "%20");
+    System.out.println("Seeking card at "+url+"\nConversion: "+conversionRateUSDToCAD+"\tTime: "+currentTime.toString());
     
     
-    Fetcher fetcher = new Fetcher(currentTime,url,conversionRateUSDToCAD,menu,system);
-    //Card card = fetcher.getCard(0);
+    Fetcher fetcher = new Fetcher(currentTime,url,conversionRateUSDToCAD,menu,system, database);
+    fetcher.fetchAll();
+    //print all cards and their prices
+    System.out.println("Database Content:");
+    for (Card card: database.getCards()) {
+      System.out.println("Prices of "+card.getName()+"|"+card.getCategory());
+      System.out.println("Price\t In Stock\\t Is NM\t Foil\t Date");
+      for (Price price: card.getPrices()) {
+        System.out.println(price.getAmount() +"\t"+ price.getIsNM() +"\t"+ price.getIsInStock() +"\t"+ price.getIsNM() +"\t"+ price.getIsFoil() +"\t"+ price.getFetchDate());
+      }
+    }
     return null;
   }
-  
-  public static Card findCardByCardName(String cardName) {
-    return findCardByCardName(cardName,true,true,false,false);
+  /**
+   * Overload method for fetchCardByCardName with default boolean parameters
+   * @param cardName - Name of the card to be updated
+   * @return Card object that is being updated
+   */
+  public static Card fetchCardByCardName(String cardName) {
+    return fetchCardByCardName(cardName,false,true,false,false);
   }
   
+  /**
+   * Update the current conversion rate (between USD and CAD)
+   * @return true if success, false if there is an error
+   */
   public static boolean updateConversionRate() {
     String from = "usd";
     String to = "cad";
@@ -66,7 +97,7 @@ public class FetcherController {
     webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
     webClient.getOptions().setThrowExceptionOnScriptError(false);
     webClient.getOptions().setPrintContentOnFailingStatusCode(false);
-
+    webClient.setJavaScriptErrorListener(new SilentJavaScriptErrorListener()); webClient.setCssErrorHandler(new SilentCssErrorHandler());
     try {
        HtmlPage page = webClient.getPage("https://ca.investing.com/currencies/"+from+"-"+to);
 
@@ -85,6 +116,11 @@ public class FetcherController {
        return false;
     }
   }
+  
+  /**
+   * Update the current time
+   * @return LocalDateTime of the current time
+   */
   public static LocalDateTime updateCurrentTime() {
     return currentTime = system.updateCurrentDate();
   }

@@ -5,43 +5,40 @@ package com.MagicPrices.model;
 import java.time.LocalDateTime;
 import java.util.*;
 
-// line 28 "../../../Fetcher.ump"
+// line 29 "../../../Fetcher.ump"
 public class Card
 {
-
-  //------------------------
-  // STATIC VARIABLES
-  //------------------------
-
-  private static int nextCardId = 1;
 
   //------------------------
   // MEMBER VARIABLES
   //------------------------
 
   //Card Attributes
+  private String cardId;
   private String name;
-  private String setName;
-
-  //Autounique Attributes
-  private int cardId;
+  private String category;
 
   //Card Associations
-  private Fetcher fetcher;
   private List<Price> prices;
-  private Reader reader;
+  private CardDatabase cardDatabase;
+  private Fetcher fetcher;
   private FetcherSystem fetcherSystem;
 
   //------------------------
   // CONSTRUCTOR
   //------------------------
 
-  public Card(String aName, String aSetName, FetcherSystem aFetcherSystem)
+  public Card(String aCardId, String aName, String aCategory, CardDatabase aCardDatabase, FetcherSystem aFetcherSystem)
   {
+    cardId = aCardId;
     name = aName;
-    setName = aSetName;
-    cardId = nextCardId++;
+    category = aCategory;
     prices = new ArrayList<Price>();
+    boolean didAddCardDatabase = setCardDatabase(aCardDatabase);
+    if (!didAddCardDatabase)
+    {
+      throw new RuntimeException("Unable to create card due to cardDatabase. See http://manual.umple.org?RE002ViolationofAssociationMultiplicity.html");
+    }
     boolean didAddFetcherSystem = setFetcherSystem(aFetcherSystem);
     if (!didAddFetcherSystem)
     {
@@ -53,6 +50,14 @@ public class Card
   // INTERFACE
   //------------------------
 
+  public boolean setCardId(String aCardId)
+  {
+    boolean wasSet = false;
+    cardId = aCardId;
+    wasSet = true;
+    return wasSet;
+  }
+
   public boolean setName(String aName)
   {
     boolean wasSet = false;
@@ -61,12 +66,17 @@ public class Card
     return wasSet;
   }
 
-  public boolean setSetName(String aSetName)
+  public boolean setCategory(String aCategory)
   {
     boolean wasSet = false;
-    setName = aSetName;
+    category = aCategory;
     wasSet = true;
     return wasSet;
+  }
+
+  public String getCardId()
+  {
+    return cardId;
   }
 
   public String getName()
@@ -74,25 +84,9 @@ public class Card
     return name;
   }
 
-  public String getSetName()
+  public String getCategory()
   {
-    return setName;
-  }
-
-  public int getCardId()
-  {
-    return cardId;
-  }
-  /* Code from template association_GetOne */
-  public Fetcher getFetcher()
-  {
-    return fetcher;
-  }
-
-  public boolean hasFetcher()
-  {
-    boolean has = fetcher != null;
-    return has;
+    return category;
   }
   /* Code from template association_GetMany */
   public Price getPrice(int index)
@@ -125,37 +119,25 @@ public class Card
     return index;
   }
   /* Code from template association_GetOne */
-  public Reader getReader()
+  public CardDatabase getCardDatabase()
   {
-    return reader;
+    return cardDatabase;
+  }
+  /* Code from template association_GetOne */
+  public Fetcher getFetcher()
+  {
+    return fetcher;
   }
 
-  public boolean hasReader()
+  public boolean hasFetcher()
   {
-    boolean has = reader != null;
+    boolean has = fetcher != null;
     return has;
   }
   /* Code from template association_GetOne */
   public FetcherSystem getFetcherSystem()
   {
     return fetcherSystem;
-  }
-  /* Code from template association_SetOptionalOneToMany */
-  public boolean setFetcher(Fetcher aFetcher)
-  {
-    boolean wasSet = false;
-    Fetcher existingFetcher = fetcher;
-    fetcher = aFetcher;
-    if (existingFetcher != null && !existingFetcher.equals(aFetcher))
-    {
-      existingFetcher.removeCard(this);
-    }
-    if (aFetcher != null)
-    {
-      aFetcher.addCard(this);
-    }
-    wasSet = true;
-    return wasSet;
   }
   /* Code from template association_MinimumNumberOfMethod */
   public static int minimumNumberOfPrices()
@@ -229,19 +211,54 @@ public class Card
     }
     return wasAdded;
   }
-  /* Code from template association_SetOptionalOneToMany */
-  public boolean setReader(Reader aReader)
+  /* Code from template association_SetOneToMany */
+  public boolean setCardDatabase(CardDatabase aCardDatabase)
   {
     boolean wasSet = false;
-    Reader existingReader = reader;
-    reader = aReader;
-    if (existingReader != null && !existingReader.equals(aReader))
+    if (aCardDatabase == null)
     {
-      existingReader.removeCard(this);
+      return wasSet;
     }
-    if (aReader != null)
+
+    CardDatabase existingCardDatabase = cardDatabase;
+    cardDatabase = aCardDatabase;
+    if (existingCardDatabase != null && !existingCardDatabase.equals(aCardDatabase))
     {
-      aReader.addCard(this);
+      existingCardDatabase.removeCard(this);
+    }
+    cardDatabase.addCard(this);
+    wasSet = true;
+    return wasSet;
+  }
+  /* Code from template association_SetOptionalOneToOptionalOne */
+  public boolean setFetcher(Fetcher aNewFetcher)
+  {
+    boolean wasSet = false;
+    if (aNewFetcher == null)
+    {
+      Fetcher existingFetcher = fetcher;
+      fetcher = null;
+      
+      if (existingFetcher != null && existingFetcher.getCard() != null)
+      {
+        existingFetcher.setCard(null);
+      }
+      wasSet = true;
+      return wasSet;
+    }
+
+    Fetcher currentFetcher = getFetcher();
+    if (currentFetcher != null && !currentFetcher.equals(aNewFetcher))
+    {
+      currentFetcher.setCard(null);
+    }
+
+    fetcher = aNewFetcher;
+    Card existingCard = aNewFetcher.getCard();
+
+    if (!equals(existingCard))
+    {
+      aNewFetcher.setCard(this);
     }
     wasSet = true;
     return wasSet;
@@ -268,22 +285,20 @@ public class Card
 
   public void delete()
   {
-    if (fetcher != null)
-    {
-      Fetcher placeholderFetcher = fetcher;
-      this.fetcher = null;
-      placeholderFetcher.removeCard(this);
-    }
     for(int i=prices.size(); i > 0; i--)
     {
       Price aPrice = prices.get(i - 1);
       aPrice.delete();
     }
-    if (reader != null)
+    CardDatabase placeholderCardDatabase = cardDatabase;
+    this.cardDatabase = null;
+    if(placeholderCardDatabase != null)
     {
-      Reader placeholderReader = reader;
-      this.reader = null;
-      placeholderReader.removeCard(this);
+      placeholderCardDatabase.removeCard(this);
+    }
+    if (fetcher != null)
+    {
+      fetcher.setCard(null);
     }
     FetcherSystem placeholderFetcherSystem = fetcherSystem;
     this.fetcherSystem = null;
@@ -293,15 +308,28 @@ public class Card
     }
   }
 
+  // line 39 "../../../Fetcher.ump"
+   public boolean setCardId(String aCardName, String aCategory){
+    boolean wasSet = false;
+    cardId = Card.convertToCardId(aCardName, aCategory);
+    wasSet = true;
+    return wasSet;
+  }
+
+  // line 46 "../../../Fetcher.ump"
+   public static  String convertToCardId(String aCardName, String aCategory){
+    return aCardName.toLowerCase().replaceAll(" ","")+aCategory.toLowerCase();
+  }
+
 
   public String toString()
   {
     return super.toString() + "["+
             "cardId" + ":" + getCardId()+ "," +
             "name" + ":" + getName()+ "," +
-            "setName" + ":" + getSetName()+ "]" + System.getProperties().getProperty("line.separator") +
+            "category" + ":" + getCategory()+ "]" + System.getProperties().getProperty("line.separator") +
+            "  " + "cardDatabase = "+(getCardDatabase()!=null?Integer.toHexString(System.identityHashCode(getCardDatabase())):"null") + System.getProperties().getProperty("line.separator") +
             "  " + "fetcher = "+(getFetcher()!=null?Integer.toHexString(System.identityHashCode(getFetcher())):"null") + System.getProperties().getProperty("line.separator") +
-            "  " + "reader = "+(getReader()!=null?Integer.toHexString(System.identityHashCode(getReader())):"null") + System.getProperties().getProperty("line.separator") +
             "  " + "fetcherSystem = "+(getFetcherSystem()!=null?Integer.toHexString(System.identityHashCode(getFetcherSystem())):"null");
   }
 }

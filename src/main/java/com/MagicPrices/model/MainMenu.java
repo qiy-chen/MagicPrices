@@ -4,7 +4,7 @@
 package com.MagicPrices.model;
 import java.time.LocalDateTime;
 
-// line 19 "../../../Fetcher.ump"
+// line 20 "../../../Fetcher.ump"
 public class MainMenu
 {
 
@@ -28,12 +28,13 @@ public class MainMenu
   private Reader reader;
   private FetcherSystem fetcherSystem;
   private Fetcher fetcher;
+  private CardDatabase cardDatabase;
 
   //------------------------
   // CONSTRUCTOR
   //------------------------
 
-  public MainMenu(FetcherSystem aFetcherSystem)
+  public MainMenu(FetcherSystem aFetcherSystem, CardDatabase aCardDatabase)
   {
     dataPath = "./";
     mainId = nextMainId++;
@@ -41,6 +42,11 @@ public class MainMenu
     if (!didAddFetcherSystem)
     {
       throw new RuntimeException("Unable to create mainMenu due to fetcherSystem. See http://manual.umple.org?RE002ViolationofAssociationMultiplicity.html");
+    }
+    boolean didAddCardDatabase = setCardDatabase(aCardDatabase);
+    if (!didAddCardDatabase)
+    {
+      throw new RuntimeException("Unable to create mainMenu due to cardDatabase. See http://manual.umple.org?RE002ViolationofAssociationMultiplicity.html");
     }
   }
 
@@ -91,6 +97,11 @@ public class MainMenu
   {
     boolean has = fetcher != null;
     return has;
+  }
+  /* Code from template association_GetOne */
+  public CardDatabase getCardDatabase()
+  {
+    return cardDatabase;
   }
   /* Code from template association_SetOptionalOneToOne */
   public boolean setReader(Reader aNewReader)
@@ -174,6 +185,34 @@ public class MainMenu
     wasSet = true;
     return wasSet;
   }
+  /* Code from template association_SetOneToOptionalOne */
+  public boolean setCardDatabase(CardDatabase aNewCardDatabase)
+  {
+    boolean wasSet = false;
+    if (aNewCardDatabase == null)
+    {
+      //Unable to setCardDatabase to null, as mainMenu must always be associated to a cardDatabase
+      return wasSet;
+    }
+    
+    MainMenu existingMainMenu = aNewCardDatabase.getMainMenu();
+    if (existingMainMenu != null && !equals(existingMainMenu))
+    {
+      //Unable to setCardDatabase, the current cardDatabase already has a mainMenu, which would be orphaned if it were re-assigned
+      return wasSet;
+    }
+    
+    CardDatabase anOldCardDatabase = cardDatabase;
+    cardDatabase = aNewCardDatabase;
+    cardDatabase.setMainMenu(this);
+
+    if (anOldCardDatabase != null)
+    {
+      anOldCardDatabase.setMainMenu(null);
+    }
+    wasSet = true;
+    return wasSet;
+  }
 
   public void delete()
   {
@@ -195,6 +234,12 @@ public class MainMenu
     {
       existingFetcher.delete();
     }
+    CardDatabase existingCardDatabase = cardDatabase;
+    cardDatabase = null;
+    if (existingCardDatabase != null)
+    {
+      existingCardDatabase.setMainMenu(null);
+    }
   }
 
 
@@ -205,6 +250,7 @@ public class MainMenu
             "dataPath" + ":" + getDataPath()+ "]" + System.getProperties().getProperty("line.separator") +
             "  " + "reader = "+(getReader()!=null?Integer.toHexString(System.identityHashCode(getReader())):"null") + System.getProperties().getProperty("line.separator") +
             "  " + "fetcherSystem = "+(getFetcherSystem()!=null?Integer.toHexString(System.identityHashCode(getFetcherSystem())):"null") + System.getProperties().getProperty("line.separator") +
-            "  " + "fetcher = "+(getFetcher()!=null?Integer.toHexString(System.identityHashCode(getFetcher())):"null");
+            "  " + "fetcher = "+(getFetcher()!=null?Integer.toHexString(System.identityHashCode(getFetcher())):"null") + System.getProperties().getProperty("line.separator") +
+            "  " + "cardDatabase = "+(getCardDatabase()!=null?Integer.toHexString(System.identityHashCode(getCardDatabase())):"null");
   }
 }

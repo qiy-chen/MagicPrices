@@ -9,6 +9,7 @@ class FetcherSystem
   1 <@>- * Card;
   1 <@>- * Reader;
   1 <@>- * Price;
+  1 <@>- 0..1 CardDatabase;
     public LocalDateTime updateCurrentDate()
   {
   	currentDate=LocalDateTime.now();
@@ -28,12 +29,23 @@ depend java.time.LocalDateTime;
 class Card
 {
 depend java.time.LocalDateTime;
-  autounique cardId;
+  String cardId;
     name;
-setName;
-* -- 0..1 Fetcher;
-  1 -- * Price;
-  * -- 0..1 Reader;
+category;
+1 -- * Price;
+    * -- 1 CardDatabase;
+  0..1 -- 0..1 Fetcher;
+public boolean setCardId(String aCardName, String aCategory){
+    boolean wasSet = false;
+    cardId = Card.convertToCardId(aCardName, aCategory);
+    wasSet = true;
+    return wasSet;
+  }
+  
+  public static String convertToCardId(String aCardName, String aCategory){
+  	return aCardName.toLowerCase().replaceAll(" ","")+aCategory.toLowerCase();
+  }
+  
 }
 
 class Fetcher
@@ -44,6 +56,9 @@ depend  com.gargoylesoftware.htmlunit.WebClient;
 depend  com.gargoylesoftware.htmlunit.html.DomElement;
 depend  com.gargoylesoftware.htmlunit.html.HtmlPage;
 depend java.io.IOException;
+  depend java.util.List;
+  depend com.gargoylesoftware.htmlunit.javascript.SilentJavaScriptErrorListener;
+  
   autounique fetcherId;
   LocalDateTime fetchDate;
   url;
@@ -51,7 +66,7 @@ depend java.io.IOException;
  0..1 -- 1 MainMenu;
  
  
- public void init(boolean isInCAD) {
+   public void fetchAll(){
     WebClient webClient = new WebClient(BrowserVersion.CHROME);
     //Shutdown some error messages
     webClient.getOptions().setCssEnabled(false);
@@ -69,26 +84,40 @@ depend java.io.IOException;
        for (DomElement card: ListOfCards) {
          String cardName;
          String cardSet;
-         boolean isNM;
-         boolean isInStock;
          double concurrentPrice=0;
-         double cardPrice=0;
          DomElement cardNameHTML = card.getFirstByXPath("//h4[@class='hawk-results__hawk-contentTitle']");
          cardName = cardNameHTML.asNormalizedText();
          DomElement cardSetHTML = card.getFirstByXPath("//p[@class='hawk-results__hawk-contentSubtitle']");
          cardSet = cardSetHTML.asNormalizedText();
          
-         //find the card currently displayed on the website
-         DomElement cardDisplayed;
-         List<DomElement> ListOfCandidateCard = card.getByXPath("//span[@class='retailPrice hawkPrice']");
-         for (DomElement candidateCard: ListOfCandidateCard) {
-           if (candidateCard.isDisplayed()) cardPrice = Double.parseDouble(candidateCard.asNormalizedText());
+         Card cardObject = new Card(Card.convertToCardId(cardName, cardSet), cardName, cardSet, cardDatabase, fetcherSystem);
+         
+         //find the card price currently displayed on the website
+         List<DomElement> ListOfPrices = card.getByXPath("//span[@class='retailPrice hawkPrice']");
+         List<DomElement> ListOfStockStatus = card.getByXPath("//span[@class='hawkStock']");
+         for (int i=0; i<=3; i++) {
+           String strPrice = ListOfPrices.get(i).asNormalizedText();
+           double price = Double.parseDouble(strPrice.trim().replaceAll("CAD $ ", ""));
+           boolean isInStock = !(ListOfStockStatus.get(i).asNormalizedText() == "Out of Stock");
+           
+           boolean isNM = (i == 0 || i == 3);
+           boolean isFoil = (i >= 2);
+           cardObject.addPrice(price, concurrentPrice, isNM, isInStock, isFoil, fetchDate, fetcherSystem);
+           
          }
          
-         DomElement cardSetHTML = card.getFirstByXPath("//h4[@class='hawk-results__hawk-contentSubtitle']");
-         cardSet = cardSetHTML.asNormalizedText();
-         DomElement cardSetHTML = card.getFirstByXPath("//h4[@class='hawk-results__hawk-contentSubtitle']");
-         cardSet = cardSetHTML.asNormalizedText();
+         int index = cardDatabase.indexOfCard(cardObject);
+         if (index > -1) {
+           Card existingCard = cardDatabase.getCard(index);
+           //Transfer all prices from fetched card to existing card
+           while (cardObject.hasPrices()) {
+             Price price = cardObject.getPrice(0);
+             existingCard.addPrice(price);
+             cardObject.removePrice(price);
+           }
+         }
+         else cardDatabase.addCard(cardObject);
+         
        }
        
 
@@ -97,8 +126,8 @@ depend java.io.IOException;
        webClient.close();
     }
   }
- 
-}
+
+  }
 
 class Reader
 {
@@ -117,5 +146,13 @@ class Price
   LocalDateTime fetchDate;
 }
 
+
+class CardDatabase
+{
+  autounique databaseId;
+  1 -- 0..1 Reader;
+  1 -- 0..1 Fetcher;
+  1 -- 0..1 MainMenu;
+}
 
 

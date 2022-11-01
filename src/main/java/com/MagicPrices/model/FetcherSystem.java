@@ -31,6 +31,7 @@ public class FetcherSystem
   private List<Card> cards;
   private List<Reader> readers;
   private List<Price> prices;
+  private CardDatabase cardDatabase;
 
   //------------------------
   // CONSTRUCTOR
@@ -198,6 +199,17 @@ public class FetcherSystem
     int index = prices.indexOf(aPrice);
     return index;
   }
+  /* Code from template association_GetOne */
+  public CardDatabase getCardDatabase()
+  {
+    return cardDatabase;
+  }
+
+  public boolean hasCardDatabase()
+  {
+    boolean has = cardDatabase != null;
+    return has;
+  }
   /* Code from template association_SetOptionalOneToOne */
   public boolean setMainMenu(MainMenu aNewMainMenu)
   {
@@ -231,9 +243,9 @@ public class FetcherSystem
     return 0;
   }
   /* Code from template association_AddManyToOne */
-  public Fetcher addFetcher(LocalDateTime aFetchDate, String aUrl, double aConversionRateUSDToCAD, MainMenu aMainMenu)
+  public Fetcher addFetcher(LocalDateTime aFetchDate, String aUrl, double aConversionRateUSDToCAD, MainMenu aMainMenu, CardDatabase aCardDatabase)
   {
-    return new Fetcher(aFetchDate, aUrl, aConversionRateUSDToCAD, aMainMenu, this);
+    return new Fetcher(aFetchDate, aUrl, aConversionRateUSDToCAD, aMainMenu, this, aCardDatabase);
   }
 
   public boolean addFetcher(Fetcher aFetcher)
@@ -303,9 +315,9 @@ public class FetcherSystem
     return 0;
   }
   /* Code from template association_AddManyToOne */
-  public Card addCard(String aName, String aSetName)
+  public Card addCard(String aCardId, String aName, String aCategory, CardDatabase aCardDatabase)
   {
-    return new Card(aName, aSetName, this);
+    return new Card(aCardId, aName, aCategory, aCardDatabase, this);
   }
 
   public boolean addCard(Card aCard)
@@ -375,9 +387,9 @@ public class FetcherSystem
     return 0;
   }
   /* Code from template association_AddManyToOne */
-  public Reader addReader(MainMenu aMainMenu)
+  public Reader addReader(MainMenu aMainMenu, CardDatabase aCardDatabase)
   {
-    return new Reader(this, aMainMenu);
+    return new Reader(this, aMainMenu, aCardDatabase);
   }
 
   public boolean addReader(Reader aReader)
@@ -513,6 +525,33 @@ public class FetcherSystem
     }
     return wasAdded;
   }
+  /* Code from template association_SetOptionalOneToOne */
+  public boolean setCardDatabase(CardDatabase aNewCardDatabase)
+  {
+    boolean wasSet = false;
+    if (cardDatabase != null && !cardDatabase.equals(aNewCardDatabase) && equals(cardDatabase.getFetcherSystem()))
+    {
+      //Unable to setCardDatabase, as existing cardDatabase would become an orphan
+      return wasSet;
+    }
+
+    cardDatabase = aNewCardDatabase;
+    FetcherSystem anOldFetcherSystem = aNewCardDatabase != null ? aNewCardDatabase.getFetcherSystem() : null;
+
+    if (!this.equals(anOldFetcherSystem))
+    {
+      if (anOldFetcherSystem != null)
+      {
+        anOldFetcherSystem.cardDatabase = null;
+      }
+      if (cardDatabase != null)
+      {
+        cardDatabase.setFetcherSystem(this);
+      }
+    }
+    wasSet = true;
+    return wasSet;
+  }
 
   public void delete()
   {
@@ -551,9 +590,16 @@ public class FetcherSystem
       prices.remove(aPrice);
     }
     
+    CardDatabase existingCardDatabase = cardDatabase;
+    cardDatabase = null;
+    if (existingCardDatabase != null)
+    {
+      existingCardDatabase.delete();
+      existingCardDatabase.setFetcherSystem(null);
+    }
   }
 
-  // line 14 "../../../Fetcher.ump"
+  // line 15 "../../../Fetcher.ump"
    public LocalDateTime updateCurrentDate(){
     currentDate=LocalDateTime.now();
     return currentDate;
@@ -565,6 +611,7 @@ public class FetcherSystem
     return super.toString() + "["+
             "id" + ":" + getId()+ "]" + System.getProperties().getProperty("line.separator") +
             "  " + "currentDate" + "=" + (getCurrentDate() != null ? !getCurrentDate().equals(this)  ? getCurrentDate().toString().replaceAll("  ","    ") : "this" : "null") + System.getProperties().getProperty("line.separator") +
-            "  " + "mainMenu = "+(getMainMenu()!=null?Integer.toHexString(System.identityHashCode(getMainMenu())):"null");
+            "  " + "mainMenu = "+(getMainMenu()!=null?Integer.toHexString(System.identityHashCode(getMainMenu())):"null") + System.getProperties().getProperty("line.separator") +
+            "  " + "cardDatabase = "+(getCardDatabase()!=null?Integer.toHexString(System.identityHashCode(getCardDatabase())):"null");
   }
 }

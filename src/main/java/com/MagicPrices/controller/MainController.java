@@ -1,8 +1,10 @@
 package com.MagicPrices.controller;
 
 import java.util.Scanner;
+import java.util.logging.Level;
 import javax.annotation.PostConstruct;
 import com.MagicPrices.MagicPricesApplication;
+import com.MagicPrices.model.CardDatabase;
 import com.MagicPrices.model.FetcherSystem;
 import com.MagicPrices.model.MainMenu;
 import org.springframework.boot.CommandLineRunner;
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Component;
 public class MainController implements CommandLineRunner{
   private static FetcherSystem system;
   private static MainMenu menu;
+  private static CardDatabase database;
   
   @Override
   public void run(String... args) throws Exception {
@@ -23,10 +26,10 @@ public class MainController implements CommandLineRunner{
     
     //Intro
     System.out.println("Welcome.\n Please input your card name:");
-    String cardName = inputReader.nextLine();
+    //String cardName = inputReader.nextLine();
     //Test execution
     
-    FetcherController.findCardByCardName(cardName);
+    FetcherController.fetchCardByCardName("sneak attack");
     
   }
   public static FetcherSystem getFetcherSystem() {
@@ -39,11 +42,18 @@ public class MainController implements CommandLineRunner{
   
      public static MainMenu getMainMenu() {
         if (menu == null) {
-          menu = new MainMenu(MainController.getFetcherSystem());
+          menu = new MainMenu(MainController.getFetcherSystem(), MainController.getCardDatabase());
          
         }
         return menu;
       }
-
+     
+     public static CardDatabase getCardDatabase() {
+       if (database == null) {
+         database = new CardDatabase(MainController.getFetcherSystem());
+        
+       }
+       return database;
+     }
   
 }
