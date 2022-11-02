@@ -318,7 +318,7 @@ public class Card
 
   // line 46 "../../../Fetcher.ump"
    public static  String convertToCardId(String aCardName, String aCategory){
-    return aCardName.toLowerCase().replaceAll(" ","")+aCategory.toLowerCase();
+    return aCardName.toLowerCase().replaceAll(" ","")+"|"+aCategory.toLowerCase().replaceAll(" ","");
   }
 
 

@@ -23,14 +23,29 @@ public class MainController implements CommandLineRunner{
     system.setMainMenu(MainController.getMainMenu());
     
     Scanner inputReader = new Scanner(System.in);
+    String command = "";
+    while(true) {
+      //Intro
+      System.out.println("Welcome.\nPlease input your command");
+      command = inputReader.nextLine().toLowerCase();
+      if (command.equals("fetchallacard")||command.equals("faac")) {
+        System.out.println("Please input your card name: ");
+        String cardName = inputReader.nextLine().toLowerCase();
+        FetcherController.fetchCardByCardName(cardName);
+      }
+      else if (command.equals("quit")||command.equals("q")) break;
+      else printHelp();
+      
+
+    }
+
     
-    //Intro
-    System.out.println("Welcome.\n Please input your card name:");
-    //String cardName = inputReader.nextLine();
-    //Test execution
-    
-    FetcherController.fetchCardByCardName("sneak attack");
-    
+  }
+  private void printHelp() {
+    System.out.println("All commands: \n"
+        + "Command\t\tAbrievated\tUsage\n"
+        + "fetchallacard\tfaac\tFetch all the available price options from a card name.\n"
+        + "quit\t\tq\tClose the program.");
   }
   public static FetcherSystem getFetcherSystem() {
     if (system == null) {

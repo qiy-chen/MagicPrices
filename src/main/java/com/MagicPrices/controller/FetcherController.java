@@ -25,6 +25,7 @@ public class FetcherController {
   private static boolean preferedNMCondition = true;
   private static boolean preferedFoilCondition = false;
   private static boolean fastMode = false;
+  private static boolean looseSearch;
   
   public FetcherController() {}
   /**
@@ -36,28 +37,31 @@ public class FetcherController {
    * @param aFastMode - Search only the first page if true
    * @return Card object that is being updated
    */
-  public static Card fetchCardByCardName(String cardName, boolean aIsInStock, boolean aPreferedNMCondition, boolean aPreferedFoilCondition,boolean aFastMode) {
+  public static void fetchCardByCardName(String cardName, boolean aIsInStock, boolean aPreferedNMCondition, boolean aPreferedFoilCondition,boolean aFastMode, boolean alooseSearch) {
     preferedInStock = aIsInStock;
     preferedNMCondition = aPreferedNMCondition;
     preferedFoilCondition = aPreferedFoilCondition;
     fastMode = aFastMode;
+    looseSearch = alooseSearch;
     System.out.println("------------------------------------------");
 
     if (conversionRateUSDToCAD == 0) {
-      if (!updateConversionRate()) return null;
+      if (!updateConversionRate()) return;
     }
     if (currentTime == null) {
-      if (updateCurrentTime() == null) return null;
+      if (updateCurrentTime() == null) return;
     }
     System.out.println("Seeking now "+cardName);
     int pagenb = 1;
     String url = "https://www.facetofacegames.com/search/?keyword="+cardName+"&pg="+pagenb+"&tab=Magic&product%20type=Singles";
-    if (preferedInStock) url+="&child_inventory_level=1";
-    if (preferedNMCondition) url+="&option_condition=NM";
-    else url+="&option_condition=PL";
-    if (preferedFoilCondition) url+="&option_finish=Foil";
-    else url+="&option_finish=Non-Foil";
-   
+    
+    if (!looseSearch) {
+      if (preferedInStock) url+="&child_inventory_level=1";
+      if (preferedNMCondition) url+="&option_condition=NM";
+      else url+="&option_condition=PL";
+      if (preferedFoilCondition) url+="&option_finish=Foil";
+      else url+="&option_finish=Non-Foil";
+    }
     url = url.replaceAll(" ", "%20");
     System.out.println("Seeking card at "+url+"\nConversion: "+conversionRateUSDToCAD+"\tTime: "+currentTime.toString());
     
@@ -66,22 +70,28 @@ public class FetcherController {
     fetcher.fetchAll();
     //print all cards and their prices
     System.out.println("Database Content:");
+    System.out.println("--------------------------------------");
+    if (!database.hasCards()) System.out.println("The database is empty.");
     for (Card card: database.getCards()) {
-      System.out.println("Prices of "+card.getName()+"|"+card.getCategory());
-      System.out.println("Price\t In Stock\\t Is NM\t Foil\t Date");
+      System.out.println("Prices of "+card.getName()+" | "+card.getCategory());
+      System.out.println("(Card Id: "+card.getCardId());
+      System.out.println("--------------------------------------");
+      System.out.println("Price\tIn Stock\tIs NM\tFoil\tDate");
+      System.out.println("--------------------------------------");
       for (Price price: card.getPrices()) {
-        System.out.println(price.getAmount() +"\t"+ price.getIsNM() +"\t"+ price.getIsInStock() +"\t"+ price.getIsNM() +"\t"+ price.getIsFoil() +"\t"+ price.getFetchDate());
+        System.out.println(price.getAmount() +"\t"+ price.getIsInStock() +"\t\t"+ price.getIsNM() +"\t"+ price.getIsFoil() +"\t"+ price.getFetchDate());
       }
+      System.out.println("--------------------------------------");
     }
-    return null;
+    System.out.println("--------------------------------------");
   }
   /**
-   * Overload method for fetchCardByCardName with default boolean parameters
+   * Overload method for fetchCardByCardName with default boolean parameters and a loose search
    * @param cardName - Name of the card to be updated
    * @return Card object that is being updated
    */
-  public static Card fetchCardByCardName(String cardName) {
-    return fetchCardByCardName(cardName,false,true,false,false);
+  public static void fetchCardByCardName(String cardName) {
+    fetchCardByCardName(cardName,false,true,false,false,true);
   }
   
   /**
