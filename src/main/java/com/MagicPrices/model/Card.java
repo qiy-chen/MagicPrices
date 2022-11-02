@@ -5,8 +5,8 @@ package com.MagicPrices.model;
 import java.time.LocalDateTime;
 import java.util.*;
 
-// line 29 "../../../Fetcher.ump"
-public class Card
+// line 31 "../../../Fetcher.ump"
+public class Card implements Comparable<Card>
 {
 
   //------------------------
@@ -145,9 +145,9 @@ public class Card
     return 0;
   }
   /* Code from template association_AddManyToOne */
-  public Price addPrice(double aAmount, double aConcurrentPrice, boolean aIsNM, boolean aIsInStock, boolean aIsFoil, LocalDateTime aFetchDate, FetcherSystem aFetcherSystem)
+  public Price addPrice(double aAmount, double aConcurrentPrice, String aCondition, int aAmountInStock, String aFoiling, LocalDateTime aFetchDate, FetcherSystem aFetcherSystem)
   {
-    return new Price(aAmount, aConcurrentPrice, aIsNM, aIsInStock, aIsFoil, aFetchDate, aFetcherSystem, this);
+    return new Price(aAmount, aConcurrentPrice, aCondition, aAmountInStock, aFoiling, aFetchDate, aFetcherSystem, this);
   }
 
   public boolean addPrice(Price aPrice)
@@ -308,7 +308,7 @@ public class Card
     }
   }
 
-  // line 39 "../../../Fetcher.ump"
+  // line 42 "../../../Fetcher.ump"
    public boolean setCardId(String aCardName, String aCategory){
     boolean wasSet = false;
     cardId = Card.convertToCardId(aCardName, aCategory);
@@ -316,9 +316,16 @@ public class Card
     return wasSet;
   }
 
-  // line 46 "../../../Fetcher.ump"
+  // line 49 "../../../Fetcher.ump"
    public static  String convertToCardId(String aCardName, String aCategory){
     return aCardName.toLowerCase().replaceAll(" ","")+"|"+aCategory.toLowerCase().replaceAll(" ","");
+  }
+
+
+  @Override
+  // line 54 "../../../Fetcher.ump"
+   public int compareTo(Card c){
+    return this.cardId.compareTo(c.getCardId());
   }
 
 

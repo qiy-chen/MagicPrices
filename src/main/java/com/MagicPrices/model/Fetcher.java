@@ -12,7 +12,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.safari.SafariDriver;
 
-// line 51 "../../../Fetcher.ump"
+// line 59 "../../../Fetcher.ump"
 public class Fetcher
 {
 
@@ -275,13 +275,13 @@ public class Fetcher
     }
   }
 
-  // line 71 "../../../Fetcher.ump"
+  // line 79 "../../../Fetcher.ump"
    public boolean fetchAll(){
     boolean success = false;
-     WebDriver driver = null;
-    
+    WebDriver driver = null;
+
     try {
-       driver = new SafariDriver();
+      driver = new SafariDriver();
       //driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
       driver.get(url);
       try {
@@ -294,13 +294,16 @@ public class Fetcher
       //Extract information
       //System.out.println(driver.getPageSource());
       List<WebElement> ListOfCards = driver.findElements(By.xpath("//div[@class='hawk-results__item']"));
-      
+
       for (WebElement card: ListOfCards) {
         System.out.println("Found a card! Now analyzing it");
         //System.out.println(card.getText());
         String cardName;
         String cardSet;
         double concurrentPrice=0;
+        String condition;
+        String foiling;
+        int amountInStock = 0;
         WebElement cardNameHTML = card.findElement(By.className("hawk-results__hawk-contentTitle"));
         cardName = cardNameHTML.getText().trim();
         WebElement cardSetHTML = card.findElement(By.className("hawk-results__hawk-contentSubtitle"));
@@ -310,81 +313,84 @@ public class Fetcher
         if (existingCard ==null) {
           existingCard = new Card(Card.convertToCardId(cardName, cardSet), cardName, cardSet, cardDatabase, fetcherSystem);
         }
-        
-        List<List<Boolean>> radioTable = new ArrayList<List<Boolean>>();
-        //Search all the options that are available for that card, compile the result in a table
-        //populate the 2d table
-        for (int i=0; i<=1; i++) {
-          radioTable.add(new ArrayList<Boolean>());
-          for (int j=0;j<=1;j++) {
-            radioTable.get(i).add(false);
+        //Special case if the card is unique (scan)
+        if (cardName.contains(" - Scan")){
+          condition = "Scan";
+          foiling = "Scan";
+          amountInStock = Integer.parseInt(card.findElement(By.className("hawkStock")).getDomAttribute("data-stock-num"));
+          double price = Double.parseDouble(card.findElement(By.className("retailPrice")).getText().replaceAll(java.util.regex.Matcher.quoteReplacement("CAD $"), ""));
+          existingCard.addPrice(price, concurrentPrice, condition, amountInStock, foiling, fetchDate, fetcherSystem);
+        }
+        //Special case if it's an Art Card
+        else if(cardName.contains(" Art Card")) {
+          condition = "Art Card";
+          foiling = "Art Card";
+          amountInStock = Integer.parseInt(card.findElement(By.className("hawkStock")).getDomAttribute("data-stock-num"));
+          double price = Double.parseDouble(card.findElement(By.className("retailPrice")).getText().replaceAll(java.util.regex.Matcher.quoteReplacement("CAD $"), ""));
+          System.out.println("Added to the database: " + price +"\t"+ amountInStock +"\t"+ condition +"\t"+ foiling +"\t"+ fetchDate);
+          existingCard.addPrice(price, concurrentPrice, condition, amountInStock, foiling, fetchDate, fetcherSystem);
+        }
+        else {
+          List<List<String>> radioTable = new ArrayList<List<String>>();
+          //Search all the options that are available for that card, compile the result in a table
+          //populate the 2d table
+          List<WebElement> ListOfConditions = card.findElements(By.cssSelector("[data-variant-name=condition]"));
+          List<WebElement> ListOfFoiling = card.findElements(By.cssSelector("[data-variant-name=finish]"));
+
+          //Create two rows of array
+          radioTable.add(new ArrayList<String>());
+          radioTable.add(new ArrayList<String>());
+          //Populate the first row with card's available conditions
+          for (int i =0; i<ListOfConditions.size(); i++) {
+            radioTable.get(0).add(ListOfConditions.get(i).getDomAttribute("value"));
           }
-        }
-        try{
-          card.findElement(By.cssSelector("[value=NM]"));
-          radioTable.get(0).set(0, true);
-        }
-        catch(Exception e) {
-        }
-        try{
-          card.findElement(By.cssSelector("[value=PL]"));
-          radioTable.get(0).set(1, true);
-        }
-        catch(Exception e) {
-        }
-        try{
-          card.findElement(By.cssSelector("[value=Non-Foil]"));
-          radioTable.get(1).set(0, true);
-        }
-        catch(Exception e) {
-        }
-        try{
-          card.findElement(By.cssSelector("[value=Foil]"));
-          radioTable.get(1).set(1, true);
-        }
-        catch(Exception e) {
-        }
-        
-        //for (List<Boolean> a : radioTable) {
-        //  System.out.println(a.get(0)+"|"+a.get(1));
-        //}
-        
-        //Combination of NM and Foil at the top-left table
-        boolean isNM = true;
-        boolean isFoil = false;
-        //find the card price currently displayed on the website
-        List<WebElement> ListOfPrices = card.findElements(By.className("hawkPrice"));
-        List<WebElement> ListOfStockStatus = card.findElements(By.className("hawkStock"));
-        //for (WebElement a: ListOfStockStatus) {
-        //  System.out.println(a.getText());
-        //}
-        
-        int i = 0;
-        while (i < ListOfPrices.size()){
-          for (int j=0; j<=1; j++) {
-            for (int k=0;k<=1;k++) {
-              //Add the next price if the combination of NM and Foil is available for the card
-              if (radioTable.get(1).get(j) && radioTable.get(0).get(k)) {
+
+          //Populate the second row with card's available foilings
+          for (int i =0; i<ListOfFoiling.size(); i++) {
+            radioTable.get(1).add(ListOfFoiling.get(i).getDomAttribute("value"));
+          }
+
+          //for (List<String> a : radioTable) {
+           // String str = "";
+           // for (int i=0;i<a.size();i++) {
+           //   str+=a.get(i)+"|";
+           // }
+          //  System.out.println(str);
+          //}
+          //find the card price currently displayed on the website
+          List<WebElement> ListOfPrices = card.findElements(By.className("retailPrice"));
+          List<WebElement> ListOfStockStatus = card.findElements(By.className("hawkStock"));
+          //for (WebElement a: ListOfStockStatus) {
+          //  System.out.println(a.getText());
+          //}
+
+          int i = 0;
+
+          while (i < ListOfPrices.size()){
+            for (int j=0; j<ListOfFoiling.size(); j++) {
+              foiling = radioTable.get(1).get(j);
+              for (int k=0;k<ListOfConditions.size();k++) {
+                //Add the next price with the next combination of NM and Foil available for the card
+                condition = radioTable.get(0).get(k);
                 String strPrice = ListOfPrices.get(i).getText().trim();
                 //System.out.println("Price: " + strPrice);
                 double price = Double.parseDouble(strPrice.replaceAll(java.util.regex.Matcher.quoteReplacement("CAD $"), ""));
-                boolean isInStock = !(ListOfStockStatus.get(i).getText().equals("Out of Stock"));
+                //if (!ListOfStockStatus.get(i).getText().equals("Out of Stock")) {
+                //There is some cards in stock
+                //  amountInStock = Integer.parseInt(ListOfStockStatus.get(i).getText().replaceAll(" In Stock", ""));
+                //}
+                amountInStock = Integer.parseInt(ListOfStockStatus.get(i).getDomAttribute("data-stock-num"));
 
 
-                System.out.println("Added to the database: " + price +"\t"+ isInStock +"\t"+ isNM +"\t"+ isFoil +"\t"+ fetchDate);
-                existingCard.addPrice(price, concurrentPrice, isNM, isInStock, isFoil, fetchDate, fetcherSystem);
-                
+                System.out.println("Added to the database: " + price +"\t"+ amountInStock +"\t"+ condition +"\t"+ foiling +"\t"+ fetchDate);
+                existingCard.addPrice(price, concurrentPrice, condition, amountInStock, foiling, fetchDate, fetcherSystem);
                 i++;
-                
               }
-              //Change the combination to the next possible combination
-              isNM = !isNM;
             }
-            isFoil = !isFoil;
-          }
 
+          }
         }
-        }
+      }
       success = true;
       driver.quit();
 

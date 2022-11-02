@@ -4,7 +4,7 @@
 package com.MagicPrices.model;
 import java.util.*;
 
-// line 210 "../../../Fetcher.ump"
+// line 224 "../../../Fetcher.ump"
 public class CardDatabase
 {
 
@@ -332,6 +332,11 @@ public class CardDatabase
       Card aCard = cards.get(i - 1);
       aCard.delete();
     }
+  }
+
+  // line 232 "../../../Fetcher.ump"
+   public void setCards(List<Card> list){
+    this.cards = list;
   }
 
 

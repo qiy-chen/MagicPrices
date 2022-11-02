@@ -26,7 +26,7 @@ public class FetcherController {
   private static boolean preferedFoilCondition = false;
   private static boolean fastMode = false;
   private static boolean looseSearch;
-  
+
   public FetcherController() {}
   /**
    * Fetch and upgrade prices related to a card by name
@@ -46,15 +46,15 @@ public class FetcherController {
     System.out.println("------------------------------------------");
 
     if(!updateConversionRate()) return;
- 
+
     if (updateCurrentTime() == null) return;
-    
+
     System.out.println("Seeking now "+cardName);
     int pagenb = 1;
     boolean success = true;
     while (success) {
       String url = "https://www.facetofacegames.com/search/?keyword="+cardName+"&pg="+pagenb+"&tab=Magic&product%20type=Singles";
-      
+
       if (!looseSearch) {
         if (preferedInStock) url+="&child_inventory_level=1";
         if (preferedNMCondition) url+="&option_condition=NM";
@@ -64,32 +64,19 @@ public class FetcherController {
       }
       url = url.replaceAll(" ", "%20");
       System.out.println("Seeking card at "+url+"\nConversion: "+conversionRateUSDToCAD+"\tTime: "+currentTime.toString());
-      
-      
+
+
       Fetcher fetcher = new Fetcher(currentTime,url,conversionRateUSDToCAD,menu,system, database);
       success = fetcher.fetchAll();
       fetcher.delete();
       if (fastMode) success = false;
       pagenb++;
     }
-
-    //print all cards and their prices
-    System.out.println("Database Content:");
-    System.out.println("--------------------------------------");
-    if (!database.hasCards()) System.out.println("The database is empty.");
-    for (Card card: database.getCards()) {
-      System.out.println("Prices of "+card.getName()+" | "+card.getCategory());
-      System.out.println("(Card Id: "+card.getCardId()+")");
-      System.out.println("--------------------------------------");
-      System.out.println("Price\tIn Stock\tIs NM\tFoil\tDate");
-      System.out.println("--------------------------------------");
-      for (Price price: card.getPrices()) {
-        System.out.println(price.getAmount() +"\t"+ price.getIsInStock() +"\t\t"+ price.getIsNM() +"\t"+ price.getIsFoil() +"\t"+ price.getFetchDate());
-      }
-      System.out.println("--------------------------------------");
-    }
-    System.out.println("--------------------------------------");
+    //CardDatabaseController.printDatabase(database);
+    System.out.println("Search done. Enter 'pd' to print database.");
   }
+
+
   /**
    * Overload method for fetchCardByCardName with default boolean parameters and a loose search
    * @param cardName - Name of the card to be updated
@@ -98,7 +85,7 @@ public class FetcherController {
   public static void fetchCardByCardName(String cardName) {
     fetchCardByCardName(cardName,false,true,false,true,true);
   }
-  
+
   /**
    * Update the current conversion rate (between USD and CAD)
    * @return true if success, false if there is an error
@@ -114,24 +101,24 @@ public class FetcherController {
     webClient.getOptions().setPrintContentOnFailingStatusCode(false);
     webClient.setJavaScriptErrorListener(new SilentJavaScriptErrorListener()); webClient.setCssErrorHandler(new SilentCssErrorHandler());
     try {
-       HtmlPage page = webClient.getPage("https://ca.investing.com/currencies/"+from+"-"+to);
+      HtmlPage page = webClient.getPage("https://ca.investing.com/currencies/"+from+"-"+to);
 
-       webClient.getCurrentWindow().getJobManager().removeAllJobs();
-       webClient.close();
-       //Extract information
-       DomElement element = page.getFirstByXPath("//span[@data-test='instrument-price-last']");
-       System.out.println("Current conversion rate from "+from+" to "+to+" is "+element.asNormalizedText());
-       conversionRateUSDToCAD = Double.parseDouble(element.asNormalizedText());
-       
-       return true;
+      webClient.getCurrentWindow().getJobManager().removeAllJobs();
+      webClient.close();
+      //Extract information
+      DomElement element = page.getFirstByXPath("//span[@data-test='instrument-price-last']");
+      System.out.println("Current conversion rate from "+from+" to "+to+" is "+element.asNormalizedText());
+      conversionRateUSDToCAD = Double.parseDouble(element.asNormalizedText());
+
+      return true;
 
     } catch (IOException e) {
-       System.out.println("An error occurred: " + e);
-       webClient.close();
-       return false;
+      System.out.println("An error occurred: " + e);
+      webClient.close();
+      return false;
     }
   }
-  
+
   /**
    * Update the current time
    * @return LocalDateTime of the current time
@@ -139,5 +126,5 @@ public class FetcherController {
   public static LocalDateTime updateCurrentTime() {
     return currentTime = system.updateCurrentDate();
   }
-  
+
 }

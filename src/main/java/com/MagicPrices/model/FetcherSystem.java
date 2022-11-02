@@ -459,9 +459,9 @@ public class FetcherSystem
     return 0;
   }
   /* Code from template association_AddManyToOne */
-  public Price addPrice(double aAmount, double aConcurrentPrice, boolean aIsNM, boolean aIsInStock, boolean aIsFoil, LocalDateTime aFetchDate, Card aCard)
+  public Price addPrice(double aAmount, double aConcurrentPrice, String aCondition, int aAmountInStock, String aFoiling, LocalDateTime aFetchDate, Card aCard)
   {
-    return new Price(aAmount, aConcurrentPrice, aIsNM, aIsInStock, aIsFoil, aFetchDate, this, aCard);
+    return new Price(aAmount, aConcurrentPrice, aCondition, aAmountInStock, aFoiling, aFetchDate, this, aCard);
   }
 
   public boolean addPrice(Price aPrice)

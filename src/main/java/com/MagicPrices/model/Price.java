@@ -4,7 +4,7 @@
 package com.MagicPrices.model;
 import java.time.LocalDateTime;
 
-// line 197 "../../../Fetcher.ump"
+// line 211 "../../../Fetcher.ump"
 public class Price
 {
 
@@ -21,9 +21,9 @@ public class Price
   //Price Attributes
   private double amount;
   private double concurrentPrice;
-  private boolean isNM;
-  private boolean isInStock;
-  private boolean isFoil;
+  private String condition;
+  private int amountInStock;
+  private String foiling;
   private LocalDateTime fetchDate;
 
   //Autounique Attributes
@@ -37,13 +37,13 @@ public class Price
   // CONSTRUCTOR
   //------------------------
 
-  public Price(double aAmount, double aConcurrentPrice, boolean aIsNM, boolean aIsInStock, boolean aIsFoil, LocalDateTime aFetchDate, FetcherSystem aFetcherSystem, Card aCard)
+  public Price(double aAmount, double aConcurrentPrice, String aCondition, int aAmountInStock, String aFoiling, LocalDateTime aFetchDate, FetcherSystem aFetcherSystem, Card aCard)
   {
     amount = aAmount;
     concurrentPrice = aConcurrentPrice;
-    isNM = aIsNM;
-    isInStock = aIsInStock;
-    isFoil = aIsFoil;
+    condition = aCondition;
+    amountInStock = aAmountInStock;
+    foiling = aFoiling;
     fetchDate = aFetchDate;
     priceId = nextPriceId++;
     boolean didAddFetcherSystem = setFetcherSystem(aFetcherSystem);
@@ -78,26 +78,26 @@ public class Price
     return wasSet;
   }
 
-  public boolean setIsNM(boolean aIsNM)
+  public boolean setCondition(String aCondition)
   {
     boolean wasSet = false;
-    isNM = aIsNM;
+    condition = aCondition;
     wasSet = true;
     return wasSet;
   }
 
-  public boolean setIsInStock(boolean aIsInStock)
+  public boolean setAmountInStock(int aAmountInStock)
   {
     boolean wasSet = false;
-    isInStock = aIsInStock;
+    amountInStock = aAmountInStock;
     wasSet = true;
     return wasSet;
   }
 
-  public boolean setIsFoil(boolean aIsFoil)
+  public boolean setFoiling(String aFoiling)
   {
     boolean wasSet = false;
-    isFoil = aIsFoil;
+    foiling = aFoiling;
     wasSet = true;
     return wasSet;
   }
@@ -120,19 +120,19 @@ public class Price
     return concurrentPrice;
   }
 
-  public boolean getIsNM()
+  public String getCondition()
   {
-    return isNM;
+    return condition;
   }
 
-  public boolean getIsInStock()
+  public int getAmountInStock()
   {
-    return isInStock;
+    return amountInStock;
   }
 
-  public boolean getIsFoil()
+  public String getFoiling()
   {
-    return isFoil;
+    return foiling;
   }
 
   public LocalDateTime getFetchDate()
@@ -216,9 +216,9 @@ public class Price
             "priceId" + ":" + getPriceId()+ "," +
             "amount" + ":" + getAmount()+ "," +
             "concurrentPrice" + ":" + getConcurrentPrice()+ "," +
-            "isNM" + ":" + getIsNM()+ "," +
-            "isInStock" + ":" + getIsInStock()+ "," +
-            "isFoil" + ":" + getIsFoil()+ "]" + System.getProperties().getProperty("line.separator") +
+            "condition" + ":" + getCondition()+ "," +
+            "amountInStock" + ":" + getAmountInStock()+ "," +
+            "foiling" + ":" + getFoiling()+ "]" + System.getProperties().getProperty("line.separator") +
             "  " + "fetchDate" + "=" + (getFetchDate() != null ? !getFetchDate().equals(this)  ? getFetchDate().toString().replaceAll("  ","    ") : "this" : "null") + System.getProperties().getProperty("line.separator") +
             "  " + "fetcherSystem = "+(getFetcherSystem()!=null?Integer.toHexString(System.identityHashCode(getFetcherSystem())):"null") + System.getProperties().getProperty("line.separator") +
             "  " + "card = "+(getCard()!=null?Integer.toHexString(System.identityHashCode(getCard())):"null");
