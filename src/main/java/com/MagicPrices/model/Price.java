@@ -4,7 +4,7 @@
 package com.MagicPrices.model;
 import java.time.LocalDateTime;
 
-// line 193 "../../../Fetcher.ump"
+// line 197 "../../../Fetcher.ump"
 public class Price
 {
 

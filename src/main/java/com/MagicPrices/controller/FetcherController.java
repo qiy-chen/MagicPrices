@@ -45,36 +45,41 @@ public class FetcherController {
     looseSearch = alooseSearch;
     System.out.println("------------------------------------------");
 
-    if (conversionRateUSDToCAD == 0) {
-      if (!updateConversionRate()) return;
-    }
-    if (currentTime == null) {
-      if (updateCurrentTime() == null) return;
-    }
+    if(!updateConversionRate()) return;
+ 
+    if (updateCurrentTime() == null) return;
+    
     System.out.println("Seeking now "+cardName);
     int pagenb = 1;
-    String url = "https://www.facetofacegames.com/search/?keyword="+cardName+"&pg="+pagenb+"&tab=Magic&product%20type=Singles";
-    
-    if (!looseSearch) {
-      if (preferedInStock) url+="&child_inventory_level=1";
-      if (preferedNMCondition) url+="&option_condition=NM";
-      else url+="&option_condition=PL";
-      if (preferedFoilCondition) url+="&option_finish=Foil";
-      else url+="&option_finish=Non-Foil";
+    boolean success = true;
+    while (success) {
+      String url = "https://www.facetofacegames.com/search/?keyword="+cardName+"&pg="+pagenb+"&tab=Magic&product%20type=Singles";
+      
+      if (!looseSearch) {
+        if (preferedInStock) url+="&child_inventory_level=1";
+        if (preferedNMCondition) url+="&option_condition=NM";
+        else url+="&option_condition=PL";
+        if (preferedFoilCondition) url+="&option_finish=Foil";
+        else url+="&option_finish=Non-Foil";
+      }
+      url = url.replaceAll(" ", "%20");
+      System.out.println("Seeking card at "+url+"\nConversion: "+conversionRateUSDToCAD+"\tTime: "+currentTime.toString());
+      
+      
+      Fetcher fetcher = new Fetcher(currentTime,url,conversionRateUSDToCAD,menu,system, database);
+      success = fetcher.fetchAll();
+      fetcher.delete();
+      if (fastMode) success = false;
+      pagenb++;
     }
-    url = url.replaceAll(" ", "%20");
-    System.out.println("Seeking card at "+url+"\nConversion: "+conversionRateUSDToCAD+"\tTime: "+currentTime.toString());
-    
-    
-    Fetcher fetcher = new Fetcher(currentTime,url,conversionRateUSDToCAD,menu,system, database);
-    fetcher.fetchAll();
+
     //print all cards and their prices
     System.out.println("Database Content:");
     System.out.println("--------------------------------------");
     if (!database.hasCards()) System.out.println("The database is empty.");
     for (Card card: database.getCards()) {
       System.out.println("Prices of "+card.getName()+" | "+card.getCategory());
-      System.out.println("(Card Id: "+card.getCardId());
+      System.out.println("(Card Id: "+card.getCardId()+")");
       System.out.println("--------------------------------------");
       System.out.println("Price\tIn Stock\tIs NM\tFoil\tDate");
       System.out.println("--------------------------------------");
@@ -91,7 +96,7 @@ public class FetcherController {
    * @return Card object that is being updated
    */
   public static void fetchCardByCardName(String cardName) {
-    fetchCardByCardName(cardName,false,true,false,false,true);
+    fetchCardByCardName(cardName,false,true,false,true,true);
   }
   
   /**

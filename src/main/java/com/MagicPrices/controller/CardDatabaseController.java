@@ -16,7 +16,7 @@ public class CardDatabaseController {
   
   public static Card findCardById(String cardId) {
     for (int i = 0; i<database.getCards().size();i++) {
-      if (database.getCard(i).getCardId() == cardId) return database.getCard(i);
+      if (database.getCard(i).getCardId().equals(cardId)) return database.getCard(i);
     }
     return null;
   }

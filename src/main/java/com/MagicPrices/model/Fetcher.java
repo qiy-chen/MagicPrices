@@ -276,14 +276,16 @@ public class Fetcher
   }
 
   // line 71 "../../../Fetcher.ump"
-   public void fetchAll(){
-    WebDriver driver = new SafariDriver();
+   public boolean fetchAll(){
+    boolean success = false;
+     WebDriver driver = null;
     
     try {
+       driver = new SafariDriver();
       //driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
       driver.get(url);
       try {
-        TimeUnit.SECONDS.sleep(1);
+        TimeUnit.SECONDS.sleep(3);
       } catch (InterruptedException e1) {
         // TODO Auto-generated catch block
         e1.printStackTrace();
@@ -383,13 +385,16 @@ public class Fetcher
 
         }
         }
+      success = true;
+      driver.quit();
 
     }
     catch (Exception e) {
       System.out.println("Error: "+e);
-      driver.quit();
+      success = false;
+      if (driver!=null) driver.quit();
     }
-    driver.quit();
+    return success;
   }
 
 

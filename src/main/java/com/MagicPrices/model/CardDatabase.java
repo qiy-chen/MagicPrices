@@ -4,7 +4,7 @@
 package com.MagicPrices.model;
 import java.util.*;
 
-// line 206 "../../../Fetcher.ump"
+// line 210 "../../../Fetcher.ump"
 public class CardDatabase
 {
 

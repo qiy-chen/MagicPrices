@@ -67,14 +67,16 @@ depend org.openqa.selenium.safari.SafariDriver;
  0..1 -- 1 MainMenu;
  
  
-  public void fetchAll(){
-      WebDriver driver = new SafariDriver();
+    public boolean fetchAll(){
+     boolean success = false;
+     WebDriver driver = null;
     
     try {
+       driver = new SafariDriver();
       //driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
       driver.get(url);
       try {
-        TimeUnit.SECONDS.sleep(1);
+        TimeUnit.SECONDS.sleep(3);
       } catch (InterruptedException e1) {
         // TODO Auto-generated catch block
         e1.printStackTrace();
@@ -174,15 +176,17 @@ depend org.openqa.selenium.safari.SafariDriver;
 
         }
         }
+      success = true;
+      driver.quit();
 
     }
     catch (Exception e) {
       System.out.println("Error: "+e);
-      driver.quit();
+      success = false;
+      if (driver!=null) driver.quit();
     }
-    driver.quit();
+    return success;
   }
-
   }
 
 class Reader
