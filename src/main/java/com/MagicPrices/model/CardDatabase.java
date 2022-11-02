@@ -3,9 +3,10 @@
 
 package com.MagicPrices.model;
 import java.util.*;
+import java.io.Serializable;
 
-// line 224 "../../../Fetcher.ump"
-public class CardDatabase
+// line 218 "../../../Fetcher.ump"
+public class CardDatabase implements java.io.Serializable
 {
 
   //------------------------
@@ -17,6 +18,9 @@ public class CardDatabase
   //------------------------
   // MEMBER VARIABLES
   //------------------------
+
+  //CardDatabase Attributes
+  private transient Comparator<Card> cardsPriority;
 
   //Autounique Attributes
   private int databaseId;
@@ -34,6 +38,8 @@ public class CardDatabase
 
   public CardDatabase(FetcherSystem aFetcherSystem)
   {
+    cardsPriority = 
+      Comparator.comparing(Card::getCardId);
     databaseId = nextDatabaseId++;
     boolean didAddFetcherSystem = setFetcherSystem(aFetcherSystem);
     if (!didAddFetcherSystem)
@@ -46,6 +52,19 @@ public class CardDatabase
   //------------------------
   // INTERFACE
   //------------------------
+
+  public boolean setCardsPriority(Comparator<Card> aCardsPriority)
+  {
+    boolean wasSet = false;
+    cardsPriority = aCardsPriority;
+    wasSet = true;
+    return wasSet;
+  }
+
+  public Comparator<Card> getCardsPriority()
+  {
+    return cardsPriority;
+  }
 
   public int getDatabaseId()
   {
@@ -254,6 +273,9 @@ public class CardDatabase
       cards.add(aCard);
     }
     wasAdded = true;
+    if(wasAdded)
+        Collections.sort(cards, cardsPriority);
+    
     return wasAdded;
   }
 
@@ -268,39 +290,18 @@ public class CardDatabase
     }
     return wasRemoved;
   }
-  /* Code from template association_AddIndexControlFunctions */
-  public boolean addCardAt(Card aCard, int index)
-  {  
-    boolean wasAdded = false;
-    if(addCard(aCard))
-    {
-      if(index < 0 ) { index = 0; }
-      if(index > numberOfCards()) { index = numberOfCards() - 1; }
-      cards.remove(aCard);
-      cards.add(index, aCard);
-      wasAdded = true;
-    }
-    return wasAdded;
-  }
 
-  public boolean addOrMoveCardAt(Card aCard, int index)
+
+  /* Code from template association_sorted_serializable_readObject */ 
+  private void readObject(java.io.ObjectInputStream in)
+  throws Exception
   {
-    boolean wasAdded = false;
-    if(cards.contains(aCard))
-    {
-      if(index < 0 ) { index = 0; }
-      if(index > numberOfCards()) { index = numberOfCards() - 1; }
-      cards.remove(aCard);
-      cards.add(index, aCard);
-      wasAdded = true;
-    } 
-    else 
-    {
-      wasAdded = addCardAt(aCard, index);
-    }
-    return wasAdded;
-  }
+    in.defaultReadObject();
 
+    cardsPriority = 
+      Comparator.comparing(Card::getCardId);
+  }
+  
   public void delete()
   {
     Reader existingReader = reader;
@@ -334,7 +335,7 @@ public class CardDatabase
     }
   }
 
-  // line 232 "../../../Fetcher.ump"
+  // line 226 "../../../Fetcher.ump"
    public void setCards(List<Card> list){
     this.cards = list;
   }
@@ -344,6 +345,7 @@ public class CardDatabase
   {
     return super.toString() + "["+
             "databaseId" + ":" + getDatabaseId()+ "]" + System.getProperties().getProperty("line.separator") +
+            "  " + "cardsPriority" + "=" + (getCardsPriority() != null ? !getCardsPriority().equals(this)  ? getCardsPriority().toString().replaceAll("  ","    ") : "this" : "null") + System.getProperties().getProperty("line.separator") +
             "  " + "reader = "+(getReader()!=null?Integer.toHexString(System.identityHashCode(getReader())):"null") + System.getProperties().getProperty("line.separator") +
             "  " + "fetcher = "+(getFetcher()!=null?Integer.toHexString(System.identityHashCode(getFetcher())):"null") + System.getProperties().getProperty("line.separator") +
             "  " + "mainMenu = "+(getMainMenu()!=null?Integer.toHexString(System.identityHashCode(getMainMenu())):"null") + System.getProperties().getProperty("line.separator") +

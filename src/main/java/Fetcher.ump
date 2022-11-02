@@ -26,17 +26,16 @@ depend java.time.LocalDateTime;
    
 }
 
-external interface Comparable{}
+
 
 class Card
 {
 depend java.time.LocalDateTime;
-  isA Comparable;
-  String cardId;
+  cardId;
     name;
 category;
 1 -- * Price;
-    * -- 1 CardDatabase;
+    * sorted {cardId} -- 1 CardDatabase;
   0..1 -- 0..1 Fetcher;
 public boolean setCardId(String aCardName, String aCategory){
     boolean wasSet = false;
@@ -48,11 +47,6 @@ public boolean setCardId(String aCardName, String aCategory){
   public static String convertToCardId(String aCardName, String aCategory){
   	return aCardName.toLowerCase().replaceAll(" ","")+"|"+aCategory.toLowerCase().replaceAll(" ","");
   }
-  
-  	@Override
-	public int compareTo(Card c) {
-		return this.cardId.compareTo(c.getCardId());
-	}
   
 }
 
@@ -231,6 +225,7 @@ class CardDatabase
   public void setCards(List<Card> list){
   	this.cards = list;
   }
+  
   
 }
 

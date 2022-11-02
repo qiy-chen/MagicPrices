@@ -12,7 +12,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.safari.SafariDriver;
 
-// line 59 "../../../Fetcher.ump"
+// line 53 "../../../Fetcher.ump"
 public class Fetcher
 {
 
@@ -275,7 +275,7 @@ public class Fetcher
     }
   }
 
-  // line 79 "../../../Fetcher.ump"
+  // line 73 "../../../Fetcher.ump"
    public boolean fetchAll(){
     boolean success = false;
     WebDriver driver = null;

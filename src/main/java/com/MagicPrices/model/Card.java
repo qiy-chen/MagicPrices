@@ -4,9 +4,10 @@
 package com.MagicPrices.model;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.io.Serializable;
 
 // line 31 "../../../Fetcher.ump"
-public class Card implements Comparable<Card>
+public class Card implements java.io.Serializable
 {
 
   //------------------------
@@ -308,7 +309,7 @@ public class Card implements Comparable<Card>
     }
   }
 
-  // line 42 "../../../Fetcher.ump"
+  // line 41 "../../../Fetcher.ump"
    public boolean setCardId(String aCardName, String aCategory){
     boolean wasSet = false;
     cardId = Card.convertToCardId(aCardName, aCategory);
@@ -316,16 +317,9 @@ public class Card implements Comparable<Card>
     return wasSet;
   }
 
-  // line 49 "../../../Fetcher.ump"
+  // line 48 "../../../Fetcher.ump"
    public static  String convertToCardId(String aCardName, String aCategory){
     return aCardName.toLowerCase().replaceAll(" ","")+"|"+aCategory.toLowerCase().replaceAll(" ","");
-  }
-
-
-  @Override
-  // line 54 "../../../Fetcher.ump"
-   public int compareTo(Card c){
-    return this.cardId.compareTo(c.getCardId());
   }
 
 

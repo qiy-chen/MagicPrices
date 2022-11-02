@@ -41,7 +41,7 @@ public class MainController implements CommandLineRunner{
         setEndTime(command);
       }
       else if (command.equals("quit")||command.equals("q")) break;
-      else if (command.equals("sortdatabase")||command.equals("sd")) CardDatabaseController.rebuilDatabase(database);
+      //else if (command.equals("sortdatabase")||command.equals("sd")) CardDatabaseController.rebuilDatabase(database);
       else if (command.equals("printdatabase")||command.equals("pd")) CardDatabaseController.printDatabase(database);
       else if (command.equals("binarysearchdbbyid")||command.equals("bsdid")) {
         System.out.println("Please input your card id: ");

@@ -44,27 +44,6 @@ public class CardDatabaseController {
   }
 
   /**
-   * Sort the database in alphabetical order
-   * @param database - database to be sorted
-   * @return success status
-   */
-  public static boolean rebuilDatabase(CardDatabase database) {
-    try {
-      //Create editable list
-      List<Card> ListOfCards = new ArrayList<Card>();
-      ListOfCards.addAll(database.getCards());
-      Collections.sort(ListOfCards);
-      database.setCards(ListOfCards);
-      System.out.println("Rebuilt Database Successfully");
-    }
-    catch (Exception e) {
-      System.out.println("Error: "+e);
-      return false;
-    }
-    return true;
-  }
-
-  /**
    * Print the content of the database if not empty
    * @param database - database to be printed
    */
