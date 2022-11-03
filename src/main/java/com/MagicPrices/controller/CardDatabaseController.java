@@ -32,6 +32,34 @@ public class CardDatabaseController {
   }
 
   /**
+   * Find all cards that match the id in the database using linear search
+   * @param cardId - list of cards to be found matching the id given
+   * @return list of cards matching the id
+   */
+  public static List<Card> findCardsById(String cardId) {
+    List<Card> listOfCards = new ArrayList<Card>();
+    for (int i = 0; i<database.getCards().size();i++) {
+      if (database.getCard(i).getCardId().contains(cardId))
+        listOfCards.add(database.getCard(i));
+    }
+    return listOfCards;
+  }
+
+  /**
+   * Find all cards that match the name given in the database using linear search
+   * @param cardId - list of cards to be found matching the name given
+   * @return list of cards matching the name
+   */
+  public static List<Card> findCardsByName(String cardName) {
+    List<Card> listOfCards = new ArrayList<Card>();
+    for (int i = 0; i<database.getCards().size();i++) {
+      if (database.getCard(i).getName().toLowerCase().replaceAll(" ", "").contains(cardName))
+        listOfCards.add(database.getCard(i));
+    }
+    return listOfCards;
+  }
+
+  /**
    * Find a particular card by its id in the database using binary search (list must be sorted before)
    * @param cardId - card to be found using it's id
    * @return the card's object, null if not found
@@ -83,6 +111,26 @@ public class CardDatabaseController {
     }
     System.out.println("--------------------------------------");
   }
+
+public static void printCards(List<Card> cards) {
+  if (cards.size() == 0) {
+    System.out.println("No card found.");
+    return;
+  }
+  for (Card c: cards) {
+    System.out.println("Card Content:");
+    System.out.println("--------------------------------------");
+    System.out.println("Prices of "+c.getName()+" | "+c.getCategory());
+    System.out.println("(Card Id: "+c.getCardId()+")");
+    System.out.println("--------------------------------------");
+    System.out.println("Price\tIn Stock\tIs NM\tFoil\tDate");
+    System.out.println("--------------------------------------");
+    for (Price price: c.getPrices()) {
+      System.out.println(price.getAmount() +"\t"+ price.getAmountInStock() +"\t\t"+ price.getCondition() +"\t"+ price.getFoiling() +"\t"+ price.getFetchDate());
+    }
+    System.out.println("--------------------------------------");
+  }
+}
 }
 
 class BinarySearch {

@@ -276,24 +276,56 @@ public class Fetcher
   }
 
   // line 73 "../../../Fetcher.ump"
-   public boolean fetchAll(){
+   public boolean fetchAllPage(WebDriver driver){
     boolean success = false;
-    WebDriver driver = null;
+//    try {
+//      WebDriverManager.chromedriver().setup();
+//      ChromeOptions chromeOptions = new ChromeOptions();
+//      chromeOptions.addArguments("--no-sandbox");
+//      chromeOptions.addArguments("--headless");
+//      chromeOptions.addArguments("--disable-gpu");
+//      driver = new ChromeDriver(chromeOptions);
+//    }
+//    catch (Exception e) {
+//      System.out.println(e);
+//      if (driver!=null) driver.quit();
+//      try {
+//        WebDriverManager.firefoxdriver().setup();
+//        FirefoxOptions firefoxptions = new FirefoxOptions();
+//        firefoxptions.addArguments("--no-sandbox");
+//        firefoxptions.addArguments("--headless");
+//        firefoxptions.addArguments("--disable-gpu");
+//        driver = new FirefoxDriver(firefoxptions);
+//      }
+//      catch (Exception f) {
+//        System.out.println("Error starting up web driver. Please ensure that either Firefox or Chrome is installed and allow remote automation tools is enabled before trying again.");
+//        System.out.println(f);
+//        success = false;
+//        if (driver!=null) driver.quit();
+//        return success;
+//      }
+//    }
 
     try {
-      driver = new SafariDriver();
+      
       //driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
       driver.get(url);
       try {
         TimeUnit.SECONDS.sleep(3);
       } catch (InterruptedException e1) {
-        // TODO Auto-generated catch block
         e1.printStackTrace();
+        success = false;
+        return success;
       }
-
+      
+      if (driver.findElement(By.className("hawk-results")).getText().contains("No Results")) {
+        success = false;
+        return success;
+      }
+      
       //Extract information
       //System.out.println(driver.getPageSource());
-      List<WebElement> ListOfCards = driver.findElements(By.xpath("//div[@class='hawk-results__item']"));
+      List<WebElement> ListOfCards = discoverPage(url,driver);
 
       for (WebElement card: ListOfCards) {
         System.out.println("Found a card! Now analyzing it");
@@ -318,7 +350,8 @@ public class Fetcher
           condition = "Scan";
           foiling = "Scan";
           amountInStock = Integer.parseInt(card.findElement(By.className("hawkStock")).getDomAttribute("data-stock-num"));
-          double price = Double.parseDouble(card.findElement(By.className("retailPrice")).getText().replaceAll(java.util.regex.Matcher.quoteReplacement("CAD $"), ""));
+          double price = Double.parseDouble(card.findElement(By.className("retailPrice")).getText().replaceAll(java.util.regex.Matcher.quoteReplacement("CAD $"), "").replaceAll(",", ""));
+          //System.out.println("Added to the database: " + price +"\t"+ amountInStock +"\t"+ condition +"\t"+ foiling +"\t"+ fetchDate);
           existingCard.addPrice(price, concurrentPrice, condition, amountInStock, foiling, fetchDate, fetcherSystem);
         }
         //Special case if it's an Art Card
@@ -326,8 +359,8 @@ public class Fetcher
           condition = "Art Card";
           foiling = "Art Card";
           amountInStock = Integer.parseInt(card.findElement(By.className("hawkStock")).getDomAttribute("data-stock-num"));
-          double price = Double.parseDouble(card.findElement(By.className("retailPrice")).getText().replaceAll(java.util.regex.Matcher.quoteReplacement("CAD $"), ""));
-          System.out.println("Added to the database: " + price +"\t"+ amountInStock +"\t"+ condition +"\t"+ foiling +"\t"+ fetchDate);
+          double price = Double.parseDouble(card.findElement(By.className("retailPrice")).getText().replaceAll(java.util.regex.Matcher.quoteReplacement("CAD $"), "").replaceAll(",", ""));
+          //System.out.println("Added to the database: " + price +"\t"+ amountInStock +"\t"+ condition +"\t"+ foiling +"\t"+ fetchDate);
           existingCard.addPrice(price, concurrentPrice, condition, amountInStock, foiling, fetchDate, fetcherSystem);
         }
         else {
@@ -337,6 +370,19 @@ public class Fetcher
           List<WebElement> ListOfConditions = card.findElements(By.cssSelector("[data-variant-name=condition]"));
           List<WebElement> ListOfFoiling = card.findElements(By.cssSelector("[data-variant-name=finish]"));
 
+
+          //Special case, no option available
+          if (ListOfConditions.size()<1||ListOfFoiling.size()<1) {
+            condition = "N/A";
+            foiling = "\"N/A";
+            amountInStock = Integer.parseInt(card.findElement(By.className("hawkStock")).getDomAttribute("data-stock-num"));
+            double price = Double.parseDouble(card.findElement(By.className("retailPrice")).getText().replaceAll(java.util.regex.Matcher.quoteReplacement("CAD $"), "").replaceAll(",", ""));
+            //System.out.println("Added to the database: " + price +"\t"+ amountInStock +"\t"+ condition +"\t"+ foiling +"\t"+ fetchDate);
+            existingCard.addPrice(price, concurrentPrice, condition, amountInStock, foiling, fetchDate, fetcherSystem);
+            success=true;
+            return success;
+          }
+          
           //Create two rows of array
           radioTable.add(new ArrayList<String>());
           radioTable.add(new ArrayList<String>());
@@ -374,7 +420,7 @@ public class Fetcher
                 condition = radioTable.get(0).get(k);
                 String strPrice = ListOfPrices.get(i).getText().trim();
                 //System.out.println("Price: " + strPrice);
-                double price = Double.parseDouble(strPrice.replaceAll(java.util.regex.Matcher.quoteReplacement("CAD $"), ""));
+                double price = Double.parseDouble(strPrice.replaceAll(java.util.regex.Matcher.quoteReplacement("CAD $"), "").replaceAll(",", ""));
                 //if (!ListOfStockStatus.get(i).getText().equals("Out of Stock")) {
                 //There is some cards in stock
                 //  amountInStock = Integer.parseInt(ListOfStockStatus.get(i).getText().replaceAll(" In Stock", ""));
@@ -382,7 +428,7 @@ public class Fetcher
                 amountInStock = Integer.parseInt(ListOfStockStatus.get(i).getDomAttribute("data-stock-num"));
 
 
-                System.out.println("Added to the database: " + price +"\t"+ amountInStock +"\t"+ condition +"\t"+ foiling +"\t"+ fetchDate);
+                //System.out.println("Added to the database: " + price +"\t"+ amountInStock +"\t"+ condition +"\t"+ foiling +"\t"+ fetchDate);
                 existingCard.addPrice(price, concurrentPrice, condition, amountInStock, foiling, fetchDate, fetcherSystem);
                 i++;
               }
@@ -392,16 +438,25 @@ public class Fetcher
         }
       }
       success = true;
-      driver.quit();
 
     }
     catch (Exception e) {
       System.out.println("Error: "+e);
       success = false;
-      if (driver!=null) driver.quit();
     }
     return success;
   }
+   public List<WebElement> discoverPage(String url, WebDriver driver) {
+     driver.get(url);
+     try {
+       TimeUnit.SECONDS.sleep(3);
+     } catch (InterruptedException e1) {
+       e1.printStackTrace();
+       return null;
+     }
+     List<WebElement> listOfCards = driver.findElements(By.xpath("//div[@class='hawk-results__item']"));
+     return listOfCards;
+   }
 
 
   public String toString()

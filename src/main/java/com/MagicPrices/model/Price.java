@@ -3,9 +3,10 @@
 
 package com.MagicPrices.model;
 import java.time.LocalDateTime;
+import java.io.Serializable;
 
-// line 205 "../../../Fetcher.ump"
-public class Price
+// line 230 "../../../Fetcher.ump"
+public class Price implements java.io.Serializable
 {
 
   //------------------------
@@ -25,6 +26,7 @@ public class Price
   private int amountInStock;
   private String foiling;
   private LocalDateTime fetchDate;
+  private String fetchDateString;
 
   //Autounique Attributes
   private int priceId;
@@ -45,6 +47,7 @@ public class Price
     amountInStock = aAmountInStock;
     foiling = aFoiling;
     fetchDate = aFetchDate;
+    fetchDateString = fetchDate.toString();
     priceId = nextPriceId++;
     boolean didAddFetcherSystem = setFetcherSystem(aFetcherSystem);
     if (!didAddFetcherSystem)
@@ -110,6 +113,14 @@ public class Price
     return wasSet;
   }
 
+  public boolean setFetchDateString(String aFetchDateString)
+  {
+    boolean wasSet = false;
+    fetchDateString = aFetchDateString;
+    wasSet = true;
+    return wasSet;
+  }
+
   public double getAmount()
   {
     return amount;
@@ -138,6 +149,11 @@ public class Price
   public LocalDateTime getFetchDate()
   {
     return fetchDate;
+  }
+
+  public String getFetchDateString()
+  {
+    return fetchDateString;
   }
 
   public int getPriceId()
@@ -218,7 +234,8 @@ public class Price
             "concurrentPrice" + ":" + getConcurrentPrice()+ "," +
             "condition" + ":" + getCondition()+ "," +
             "amountInStock" + ":" + getAmountInStock()+ "," +
-            "foiling" + ":" + getFoiling()+ "]" + System.getProperties().getProperty("line.separator") +
+            "foiling" + ":" + getFoiling()+ "," +
+            "fetchDateString" + ":" + getFetchDateString()+ "]" + System.getProperties().getProperty("line.separator") +
             "  " + "fetchDate" + "=" + (getFetchDate() != null ? !getFetchDate().equals(this)  ? getFetchDate().toString().replaceAll("  ","    ") : "this" : "null") + System.getProperties().getProperty("line.separator") +
             "  " + "fetcherSystem = "+(getFetcherSystem()!=null?Integer.toHexString(System.identityHashCode(getFetcherSystem())):"null") + System.getProperties().getProperty("line.separator") +
             "  " + "card = "+(getCard()!=null?Integer.toHexString(System.identityHashCode(getCard())):"null");

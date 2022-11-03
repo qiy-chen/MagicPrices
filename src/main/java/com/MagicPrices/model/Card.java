@@ -18,6 +18,7 @@ public class Card implements java.io.Serializable
   private String cardId;
   private String name;
   private String category;
+  private transient Comparator<Price> pricesPriority;
 
   //Card Associations
   private List<Price> prices;
@@ -34,6 +35,8 @@ public class Card implements java.io.Serializable
     cardId = aCardId;
     name = aName;
     category = aCategory;
+    pricesPriority = 
+      Comparator.comparing(Price::getFetchDateString);
     prices = new ArrayList<Price>();
     boolean didAddCardDatabase = setCardDatabase(aCardDatabase);
     if (!didAddCardDatabase)
@@ -75,6 +78,14 @@ public class Card implements java.io.Serializable
     return wasSet;
   }
 
+  public boolean setPricesPriority(Comparator<Price> aPricesPriority)
+  {
+    boolean wasSet = false;
+    pricesPriority = aPricesPriority;
+    wasSet = true;
+    return wasSet;
+  }
+
   public String getCardId()
   {
     return cardId;
@@ -88,6 +99,11 @@ public class Card implements java.io.Serializable
   public String getCategory()
   {
     return category;
+  }
+
+  public Comparator<Price> getPricesPriority()
+  {
+    return pricesPriority;
   }
   /* Code from template association_GetMany */
   public Price getPrice(int index)
@@ -166,6 +182,9 @@ public class Card implements java.io.Serializable
       prices.add(aPrice);
     }
     wasAdded = true;
+    if(wasAdded)
+        Collections.sort(prices, pricesPriority);
+    
     return wasAdded;
   }
 
@@ -180,38 +199,7 @@ public class Card implements java.io.Serializable
     }
     return wasRemoved;
   }
-  /* Code from template association_AddIndexControlFunctions */
-  public boolean addPriceAt(Price aPrice, int index)
-  {  
-    boolean wasAdded = false;
-    if(addPrice(aPrice))
-    {
-      if(index < 0 ) { index = 0; }
-      if(index > numberOfPrices()) { index = numberOfPrices() - 1; }
-      prices.remove(aPrice);
-      prices.add(index, aPrice);
-      wasAdded = true;
-    }
-    return wasAdded;
-  }
 
-  public boolean addOrMovePriceAt(Price aPrice, int index)
-  {
-    boolean wasAdded = false;
-    if(prices.contains(aPrice))
-    {
-      if(index < 0 ) { index = 0; }
-      if(index > numberOfPrices()) { index = numberOfPrices() - 1; }
-      prices.remove(aPrice);
-      prices.add(index, aPrice);
-      wasAdded = true;
-    } 
-    else 
-    {
-      wasAdded = addPriceAt(aPrice, index);
-    }
-    return wasAdded;
-  }
   /* Code from template association_SetOneToMany */
   public boolean setCardDatabase(CardDatabase aCardDatabase)
   {
@@ -284,6 +272,16 @@ public class Card implements java.io.Serializable
     return wasSet;
   }
 
+  /* Code from template association_sorted_serializable_readObject */ 
+  private void readObject(java.io.ObjectInputStream in)
+  throws Exception
+  {
+    in.defaultReadObject();
+
+    pricesPriority = 
+      Comparator.comparing(Price::getFetchDateString);
+  }
+  
   public void delete()
   {
     for(int i=prices.size(); i > 0; i--)
@@ -329,6 +327,7 @@ public class Card implements java.io.Serializable
             "cardId" + ":" + getCardId()+ "," +
             "name" + ":" + getName()+ "," +
             "category" + ":" + getCategory()+ "]" + System.getProperties().getProperty("line.separator") +
+            "  " + "pricesPriority" + "=" + (getPricesPriority() != null ? !getPricesPriority().equals(this)  ? getPricesPriority().toString().replaceAll("  ","    ") : "this" : "null") + System.getProperties().getProperty("line.separator") +
             "  " + "cardDatabase = "+(getCardDatabase()!=null?Integer.toHexString(System.identityHashCode(getCardDatabase())):"null") + System.getProperties().getProperty("line.separator") +
             "  " + "fetcher = "+(getFetcher()!=null?Integer.toHexString(System.identityHashCode(getFetcher())):"null") + System.getProperties().getProperty("line.separator") +
             "  " + "fetcherSystem = "+(getFetcherSystem()!=null?Integer.toHexString(System.identityHashCode(getFetcherSystem())):"null");

@@ -20,6 +20,7 @@ dependencies {
   implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
   implementation 'org.springframework.boot:spring-boot-starter-web'
   implementation('net.sourceforge.htmlunit:htmlunit:2.51.0')
+  implementation("io.github.bonigarcia:webdrivermanager:5.3.0")
   runtimeOnly 'org.postgresql:postgresql'
   testImplementation 'org.springframework.boot:spring-boot-starter-test'
   implementation group: 'org.seleniumhq.selenium', name: 'selenium-java', version: '4.4.0'

@@ -13,6 +13,9 @@ import com.gargoylesoftware.htmlunit.javascript.SilentJavaScriptErrorListener;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
 public class FetcherController {
 
@@ -37,7 +40,7 @@ public class FetcherController {
    * @param aFastMode - Search only the first page if true
    * @return Card object that is being updated
    */
-  public static void fetchCardByCardName(String cardName, boolean aIsInStock, boolean aPreferedNMCondition, boolean aPreferedFoilCondition,boolean aFastMode, boolean alooseSearch) {
+  public static void fetchCardByCardName(String cardName, boolean aIsInStock, boolean aPreferedNMCondition, boolean aPreferedFoilCondition,boolean aFastMode, boolean alooseSearch,WebDriver driver) {
     preferedInStock = aIsInStock;
     preferedNMCondition = aPreferedNMCondition;
     preferedFoilCondition = aPreferedFoilCondition;
@@ -67,7 +70,7 @@ public class FetcherController {
 
 
       Fetcher fetcher = new Fetcher(currentTime,url,conversionRateUSDToCAD,menu,system, database);
-      success = fetcher.fetchAll();
+      success = fetcher.fetchAllPage(driver);
       fetcher.delete();
       if (fastMode) success = false;
       pagenb++;
@@ -82,8 +85,8 @@ public class FetcherController {
    * @param cardName - Name of the card to be updated
    * @return Card object that is being updated
    */
-  public static void fetchCardByCardName(String cardName) {
-    fetchCardByCardName(cardName,false,true,false,true,true);
+  public static void fetchCardByCardName(String cardName,WebDriver driver) {
+    fetchCardByCardName(cardName,false,true,false,true,true,driver);
   }
 
   /**
@@ -117,6 +120,25 @@ public class FetcherController {
       webClient.close();
       return false;
     }
+  }
+  
+  public static void printPageFromURL(String url, WebDriver driver) {
+    Fetcher fetcher = new Fetcher(currentTime,url,conversionRateUSDToCAD,menu,system, database);
+    List<WebElement> listOfCards = fetcher.discoverPage(url, driver);
+    System.out.println("Card(s) at "+url);
+    System.out.println("--------------------------------------");
+    //Print name, set and id (url)
+    for (WebElement card: listOfCards) {
+      WebElement cardNameHTML = card.findElement(By.className("hawk-results__hawk-contentTitle"));
+      String cardName = cardNameHTML.getText().trim();
+      WebElement cardSetHTML = card.findElement(By.className("hawk-results__hawk-contentSubtitle"));
+      String cardSet = cardSetHTML.getText().trim();
+      String cardId="";
+      System.out.println("Name: "+cardName+" | Set: "+cardSet+"\nCard Id: "+cardId);
+      System.out.println("--------------------------------------");
+    }
+    System.out.println("--------------------------------------");
+    fetcher.delete();
   }
 
   /**
