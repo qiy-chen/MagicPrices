@@ -65,8 +65,7 @@ public class CardDatabaseController {
    * @return the card's object, null if not found
    */
   public static Card findCardByIdBinarySearch(String cardId) {
-    BinarySearch search = new BinarySearch();
-    int index = search.binarySearch(database.getCards(), cardId, 0, database.getCards().size()-1);
+    int index = binarySearch(database.getCards(), cardId, 0, database.getCards().size()-1);
     if (index == -1) return null;
     else return database.getCard(index);
   }
@@ -112,29 +111,27 @@ public class CardDatabaseController {
     System.out.println("--------------------------------------");
   }
 
-public static void printCards(List<Card> cards) {
-  if (cards.size() == 0) {
-    System.out.println("No card found.");
-    return;
-  }
-  for (Card c: cards) {
-    System.out.println("Card Content:");
-    System.out.println("--------------------------------------");
-    System.out.println("Prices of "+c.getName()+" | "+c.getCategory());
-    System.out.println("(Card Id: "+c.getCardId()+")");
-    System.out.println("--------------------------------------");
-    System.out.println("Price\tIn Stock\tIs NM\tFoil\tDate");
-    System.out.println("--------------------------------------");
-    for (Price price: c.getPrices()) {
-      System.out.println(price.getAmount() +"\t"+ price.getAmountInStock() +"\t\t"+ price.getCondition() +"\t"+ price.getFoiling() +"\t"+ price.getFetchDate());
+  public static void printCards(List<Card> cards) {
+    if (cards.size() == 0) {
+      System.out.println("No card found.");
+      return;
     }
-    System.out.println("--------------------------------------");
+    for (Card c: cards) {
+      System.out.println("Card Content:");
+      System.out.println("--------------------------------------");
+      System.out.println("Prices of "+c.getName()+" | "+c.getCategory());
+      System.out.println("(Card Id: "+c.getCardId()+")");
+      System.out.println("--------------------------------------");
+      System.out.println("Price\tIn Stock\tIs NM\tFoil\tDate");
+      System.out.println("--------------------------------------");
+      for (Price price: c.getPrices()) {
+        System.out.println(price.getAmount() +"\t"+ price.getAmountInStock() +"\t\t"+ price.getCondition() +"\t"+ price.getFoiling() +"\t"+ price.getFetchDate());
+      }
+      System.out.println("--------------------------------------");
+    }
   }
-}
-}
 
-class BinarySearch {
-  public int binarySearch(List<Card> array, String x, int low, int high) {
+  public static int binarySearch(List<Card> array, String x, int low, int high) {
 
     if (high >= low) {
       int mid = low + (high - low) / 2;
@@ -153,5 +150,5 @@ class BinarySearch {
 
     return -1;
   }
-
 }
+

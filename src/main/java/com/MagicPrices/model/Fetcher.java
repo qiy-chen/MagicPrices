@@ -12,7 +12,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.safari.SafariDriver;
 
-// line 53 "../../../Fetcher.ump"
+// line 57 "../../../Fetcher.ump"
 public class Fetcher
 {
 
@@ -275,7 +275,7 @@ public class Fetcher
     }
   }
 
-  // line 73 "../../../Fetcher.ump"
+  // line 77 "../../../Fetcher.ump"
    public boolean fetchAllPage(WebDriver driver){
     boolean success = false;
 //    try {
@@ -341,9 +341,9 @@ public class Fetcher
         WebElement cardSetHTML = card.findElement(By.className("hawk-results__hawk-contentSubtitle"));
         cardSet = cardSetHTML.getText().trim();
 
-        Card existingCard = CardDatabaseController.findCardById(Card.convertToCardId(cardName, cardSet));
+        Card existingCard = CardDatabaseController.findCardById(Card.convertToCardId(card));
         if (existingCard ==null) {
-          existingCard = new Card(Card.convertToCardId(cardName, cardSet), cardName, cardSet, cardDatabase, fetcherSystem);
+          existingCard = new Card(Card.convertToCardId(card), cardName, cardSet, cardDatabase, fetcherSystem);
         }
         //Special case if the card is unique (scan)
         if (cardName.contains(" - Scan")){
@@ -446,8 +446,10 @@ public class Fetcher
     }
     return success;
   }
-   public List<WebElement> discoverPage(String url, WebDriver driver) {
-     driver.get(url);
+
+  // line 248 "../../../Fetcher.ump"
+   public List<WebElement> discoverPage(String url, WebDriver driver){
+    driver.get(url);
      try {
        TimeUnit.SECONDS.sleep(3);
      } catch (InterruptedException e1) {
@@ -456,7 +458,7 @@ public class Fetcher
      }
      List<WebElement> listOfCards = driver.findElements(By.xpath("//div[@class='hawk-results__item']"));
      return listOfCards;
-   }
+  }
 
 
   public String toString()

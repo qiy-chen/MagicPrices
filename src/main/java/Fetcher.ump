@@ -31,22 +31,26 @@ depend java.time.LocalDateTime;
 class Card
 {
 depend java.time.LocalDateTime;
+depend org.openqa.selenium.WebElement;
+depend org.openqa.selenium.By;
   cardId;
     name;
 category;
 1 -- * Price sorted {fetchDateString} ;
     * sorted {cardId} -- 1 CardDatabase;
   0..1 -- 0..1 Fetcher;
-public boolean setCardId(String aCardName, String aCategory){
+  
+   public boolean setCardId(WebElement card){
     boolean wasSet = false;
-    cardId = Card.convertToCardId(aCardName, aCategory);
+    cardId = Card.convertToCardId(card);
     wasSet = true;
     return wasSet;
   }
   
-  public static String convertToCardId(String aCardName, String aCategory){
-  	return aCardName.toLowerCase().replaceAll(" ","")+"|"+aCategory.toLowerCase().replaceAll(" ","");
+   public static  String convertToCardId(WebElement card){
+    return card.findElement(By.tagName("a")).getDomAttribute("href").replaceAll("https://www.facetofacegames.com/", "").replaceAll("/","");
   }
+
   
 }
 
@@ -134,9 +138,9 @@ depend org.openqa.selenium.safari.SafariDriver;
         WebElement cardSetHTML = card.findElement(By.className("hawk-results__hawk-contentSubtitle"));
         cardSet = cardSetHTML.getText().trim();
 
-        Card existingCard = CardDatabaseController.findCardById(Card.convertToCardId(cardName, cardSet));
+        Card existingCard = CardDatabaseController.findCardById(Card.convertToCardId(card));
         if (existingCard ==null) {
-          existingCard = new Card(Card.convertToCardId(cardName, cardSet), cardName, cardSet, cardDatabase, fetcherSystem);
+          existingCard = new Card(Card.convertToCardId(card), cardName, cardSet, cardDatabase, fetcherSystem);
         }
         //Special case if the card is unique (scan)
         if (cardName.contains(" - Scan")){
@@ -239,8 +243,9 @@ depend org.openqa.selenium.safari.SafariDriver;
     }
     return success;
   }
-   public List<WebElement> discoverPage(String url, WebDriver driver) {
-     driver.get(url);
+
+   public List<WebElement> discoverPage(String url, WebDriver driver){
+    driver.get(url);
      try {
        TimeUnit.SECONDS.sleep(3);
      } catch (InterruptedException e1) {
@@ -249,7 +254,7 @@ depend org.openqa.selenium.safari.SafariDriver;
      }
      List<WebElement> listOfCards = driver.findElements(By.xpath("//div[@class='hawk-results__item']"));
      return listOfCards;
-   }
+  }
   }
 
 class Reader

@@ -5,7 +5,7 @@ package com.MagicPrices.model;
 import java.util.*;
 import java.io.Serializable;
 
-// line 244 "../../../Fetcher.ump"
+// line 279 "../../../Fetcher.ump"
 public class CardDatabase implements java.io.Serializable
 {
 
@@ -335,7 +335,7 @@ public class CardDatabase implements java.io.Serializable
     }
   }
 
-  // line 252 "../../../Fetcher.ump"
+  // line 287 "../../../Fetcher.ump"
    public void setCards(List<Card> list){
     this.cards = list;
   }

@@ -3,7 +3,7 @@
 
 package com.MagicPrices.model;
 
-// line 225 "../../../Fetcher.ump"
+// line 260 "../../../Fetcher.ump"
 public class Reader
 {
 

@@ -124,9 +124,10 @@ public class MainController implements CommandLineRunner{
         + "fetchall\t\tfa\tFetch all the available price options from a card name search.\n"
         + "discoverpageurl\tdpurl\tPrint the name, set and id of all cards on the page of target URL.\n"
         + "printdatabase\t\tpd\tPrint all the cards in the database.\n"
-        + "binarysearchdbbyid\tbsdid\tSearch the database using binary search.\n"
-        + "linearsearchdbbyid\tlsdid\\tSearch the database using linear search.\n"
-        + "restartdriver\trd\tRestart the web driver. Use it if the web driver hasn't started or if there are some issues with it."
+        + "binarysearchdbbyid\tbsdid\tSearch the database by id using binary search.\n"
+        + "linearsearchdbbyid\tlsdid\tSearch the database by id using linear search.\n"
+        + "linearsearchdbbyname\tlsdn\tSearch the database by name using linear search.\n"
+        + "restartdriver\trd\tRestart the web driver. Use it if the web driver hasn't started or if there are some issues with it.\n"
         + "\\return\t\t\t\\r\tGo to previous menu.\n"
         + "quit\t\t\tq\tClose the program.");
   }

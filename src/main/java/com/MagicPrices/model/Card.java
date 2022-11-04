@@ -3,6 +3,8 @@
 
 package com.MagicPrices.model;
 import java.time.LocalDateTime;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.By;
 import java.util.*;
 import java.io.Serializable;
 
@@ -307,17 +309,17 @@ public class Card implements java.io.Serializable
     }
   }
 
-  // line 41 "../../../Fetcher.ump"
-   public boolean setCardId(String aCardName, String aCategory){
+  // line 44 "../../../Fetcher.ump"
+   public boolean setCardId(WebElement card){
     boolean wasSet = false;
-    cardId = Card.convertToCardId(aCardName, aCategory);
+    cardId = Card.convertToCardId(card);
     wasSet = true;
     return wasSet;
   }
 
-  // line 48 "../../../Fetcher.ump"
-   public static  String convertToCardId(String aCardName, String aCategory){
-    return aCardName.toLowerCase().replaceAll(" ","")+"|"+aCategory.toLowerCase().replaceAll(" ","");
+  // line 51 "../../../Fetcher.ump"
+   public static  String convertToCardId(WebElement card){
+    return card.findElement(By.tagName("a")).getDomAttribute("href").replaceAll("https://www.facetofacegames.com/", "").replaceAll("/","");
   }
 
 
