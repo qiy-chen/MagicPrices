@@ -1,5 +1,6 @@
 package com.MagicPrices.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -10,6 +11,7 @@ import com.MagicPrices.model.CardDatabase;
 import com.MagicPrices.model.FetcherSystem;
 import com.MagicPrices.model.MainMenu;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.safari.SafariDriver;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -22,6 +24,7 @@ public class MainController implements CommandLineRunner{
   private static WebDriver driver;
   private long startTime = 0;
   private long endTime = 0;
+  private String filePath = "./";
 
   @Override
   public void run(String... args) throws Exception {
@@ -40,7 +43,7 @@ public class MainController implements CommandLineRunner{
       if (command.equals("fetchallacard")||command.equals("faac")) {
         System.out.println("Please input your card name: ");
         String input = inputReader.nextLine().toLowerCase();
-        if (input.equals("\return")|input.equals("\r")) continue;
+        if (input.equals("\\return")|input.equals("\\r")) continue;
         setStartTime();
         FetcherController.fetchCardByCardName(input,driver);
         setEndTime(command);
@@ -48,7 +51,7 @@ public class MainController implements CommandLineRunner{
       if (command.equals("fetchall")||command.equals("fa")) {
         System.out.println("Please input your card name: ");
         String input = inputReader.nextLine().toLowerCase();
-        if (input.equals("\return")|input.equals("\r")) continue;
+        if (input.equals("\\return")|input.equals("\\r")) continue;
         setStartTime();
         FetcherController.fetchCardByCardName(input,false,true,false,false,true,driver);
         setEndTime(command);
@@ -59,7 +62,7 @@ public class MainController implements CommandLineRunner{
       else if (command.equals("binarysearchdbbyid")||command.equals("bsdid")) {
         System.out.println("Please input your card id: ");
         String input = inputReader.nextLine().toLowerCase();
-        if (input.equals("\return")|input.equals("\r")) continue;
+        if (input.equals("\\return")|input.equals("\\r")) continue;
 
         setStartTime();
         Card card = CardDatabaseController.findCardByIdBinarySearch(input);
@@ -73,7 +76,7 @@ public class MainController implements CommandLineRunner{
       else if (command.equals("linearsearchdbbyid")||command.equals("lsdid")) {
         System.out.println("Please input your card id: ");
         String input = inputReader.nextLine().toLowerCase();
-        if (input.equals("\return")|input.equals("\r")) continue;
+        if (input.equals("\\return")|input.equals("\\r")) continue;
         setStartTime();
         Card card = CardDatabaseController.findCardById(input);
         if (card == null) {
@@ -86,7 +89,7 @@ public class MainController implements CommandLineRunner{
       else if (command.equals("linearsearchdbbyname")||command.equals("lsdn")) {
         System.out.println("Please input your card name: ");
         String input = inputReader.nextLine().toLowerCase().replaceAll(" ", "");
-        if (input.equals("\return")|input.equals("\r")) continue;
+        if (input.equals("\\return")|input.equals("\\r")) continue;
         setStartTime();
         List<Card> cards = CardDatabaseController.findCardsByName(input);
         if (cards.size() == 0) {
@@ -104,10 +107,51 @@ public class MainController implements CommandLineRunner{
       else if (command.equals("discoverpageurl")||command.equals("dpurl")) {
         System.out.println("Please input your url: ");
         String input = inputReader.nextLine();
-        if (input.equals("\return")|input.equals("\r")) continue;
+        if (input.equals("\\return")|input.equals("\\r")) continue;
         setStartTime();
         FetcherController.printPageFromURL(input, driver);
         setEndTime(command);
+      }
+      else if (command.equals("createlist")||command.equals("cl")) {
+        System.out.println("You will now create a list of cards from scratch. Press \\return or \\r when the list is complete");
+        List<String> userList = new ArrayList<String>();
+        while (inputReader.hasNext()) {
+          String input = inputReader.nextLine();
+          if (input.equals("\\return")|input.equals("\\r")) break;
+          System.out.println("Please select the correct card by entering the number before the name of the card. Press 'p' to go to the previous page and 'n' to go to the next page.");
+          boolean activeSearch = true;
+          int pagenb = 1;
+          while (activeSearch) {
+            String url = FetcherController.generateURL(input, false, false, false, true, pagenb);
+            List<WebElement> listOfCards = FetcherController.printPageFromURL(url, driver);
+            String cardNumber = inputReader.nextLine();
+            if (cardNumber.equals("p")) {
+              if (pagenb>2) pagenb--;
+              else System.out.println("This is already the first page");
+            }
+            else if (cardNumber.equals("n")) {
+              pagenb++;
+            }
+            else if (cardNumber.equals("\\return")|cardNumber.equals("\\r")) activeSearch = false;
+            else {
+              int nb;
+              try {
+                nb = Integer.parseInt(cardNumber);
+                if (nb >= listOfCards.size()) System.out.println("No card with such number.");
+                userList.add(Card.convertToCardId(listOfCards.get(nb)));
+                System.out.println("Successfully added "+Card.convertToCardId(listOfCards.get(nb))+"\nPlease enter your next entry or press \\return or \\r to terminate the search.");
+                activeSearch = false;
+              }
+              catch (Exception e) {
+                System.out.println("The input is not an integer");
+              }
+            }
+          }
+        }
+        setStartTime();
+        FileManager.createIdListFromScratch(userList,filePath);
+        setEndTime(command);
+
       }
       else printHelp();
 
@@ -127,7 +171,8 @@ public class MainController implements CommandLineRunner{
         + "binarysearchdbbyid\tbsdid\tSearch the database by id using binary search.\n"
         + "linearsearchdbbyid\tlsdid\tSearch the database by id using linear search.\n"
         + "linearsearchdbbyname\tlsdn\tSearch the database by name using linear search.\n"
-        + "restartdriver\trd\tRestart the web driver. Use it if the web driver hasn't started or if there are some issues with it.\n"
+        + "createlist\t\tcl\tCreate a list of cards from scratch.\n"
+        + "restartdriver\t\trd\tRestart the web driver. Use it if the web driver hasn't started or if there are some issues with it.\n"
         + "\\return\t\t\t\\r\tGo to previous menu.\n"
         + "quit\t\t\tq\tClose the program.");
   }

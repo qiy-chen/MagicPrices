@@ -56,16 +56,7 @@ public class FetcherController {
     int pagenb = 1;
     boolean success = true;
     while (success) {
-      String url = "https://www.facetofacegames.com/search/?keyword="+cardName+"&pg="+pagenb+"&tab=Magic&product%20type=Singles";
-
-      if (!looseSearch) {
-        if (preferedInStock) url+="&child_inventory_level=1";
-        if (preferedNMCondition) url+="&option_condition=NM";
-        else url+="&option_condition=PL";
-        if (preferedFoilCondition) url+="&option_finish=Foil";
-        else url+="&option_finish=Non-Foil";
-      }
-      url = url.replaceAll(" ", "%20");
+      String url = generateURL(cardName, aIsInStock, aPreferedNMCondition, aPreferedFoilCondition, looseSearch, pagenb);
       System.out.println("Seeking card at "+url+"\nConversion: "+conversionRateUSDToCAD+"\tTime: "+currentTime.toString());
 
 
@@ -122,23 +113,39 @@ public class FetcherController {
     }
   }
   
-  public static void printPageFromURL(String url, WebDriver driver) {
+  public static List<WebElement> printPageFromURL(String url, WebDriver driver) {
     Fetcher fetcher = new Fetcher(currentTime,url,conversionRateUSDToCAD,menu,system, database);
     List<WebElement> listOfCards = fetcher.discoverPage(url, driver);
     System.out.println("Card(s) at "+url);
     System.out.println("--------------------------------------");
     //Print name, set and id (url)
+    int cardNumber = 0;
     for (WebElement card: listOfCards) {
       WebElement cardNameHTML = card.findElement(By.className("hawk-results__hawk-contentTitle"));
       String cardName = cardNameHTML.getText().trim();
       WebElement cardSetHTML = card.findElement(By.className("hawk-results__hawk-contentSubtitle"));
       String cardSet = cardSetHTML.getText().trim();
-      String cardId="";
-      System.out.println("Name: "+cardName+" | Set: "+cardSet+"\nCard Id: "+cardId);
+      String cardId=Card.convertToCardId(card);
+      System.out.println("["+ cardNumber++ +"] Name: "+cardName+" | Set: "+cardSet+"\nCard Id: "+cardId);
       System.out.println("--------------------------------------");
     }
     System.out.println("--------------------------------------");
     fetcher.delete();
+    return listOfCards;
+  }
+  
+  public static String generateURL(String cardName, boolean aIsInStock, boolean aPreferedNMCondition, boolean aPreferedFoilCondition, boolean alooseSearch, int pagenb) {
+    String url = "https://www.facetofacegames.com/search/?keyword="+cardName+"&pg="+pagenb+"&tab=Magic&product%20type=Singles";
+
+    if (!alooseSearch) {
+      if (aIsInStock) url+="&child_inventory_level=1";
+      if (aPreferedNMCondition) url+="&option_condition=NM";
+      else url+="&option_condition=PL";
+      if (aPreferedFoilCondition) url+="&option_finish=Foil";
+      else url+="&option_finish=Non-Foil";
+    }
+    url = url.replaceAll(" ", "%20");
+    return url;
   }
 
   /**
