@@ -91,24 +91,20 @@ public class CardDatabaseController {
     System.out.println("--------------------------------------");
   }
 
+  /**
+   * Print all the prices of a card
+   * @param card - Card to be printed
+   */
   public static void printCard(Card card) {
-    if (card == null) {
-      System.out.println("Card is non-existant.");
-      return;
-    }
-    System.out.println("Card Content:");
-    System.out.println("--------------------------------------");
-    System.out.println("Prices of "+card.getName()+" | "+card.getCategory());
-    System.out.println("(Card Id: "+card.getCardId()+")");
-    System.out.println("--------------------------------------");
-    System.out.println("Price\tIn Stock\tIs NM\tFoil\tDate");
-    System.out.println("--------------------------------------");
-    for (Price price: card.getPrices()) {
-      System.out.println(price.getAmount() +"\t"+ price.getAmountInStock() +"\t\t"+ price.getCondition() +"\t"+ price.getFoiling() +"\t"+ price.getFetchDate());
-    }
-    System.out.println("--------------------------------------");
+    List<Card> list = new ArrayList<Card>();
+    list.add(card);
+    printCards(list);
   }
 
+  /**
+   * Print all the prices of a list of cards
+   * @param card - Cards prices to be printed
+   */
   public static void printCards(List<Card> cards) {
     if (cards.size() == 0) {
       System.out.println("No card found.");
@@ -129,6 +125,14 @@ public class CardDatabaseController {
     }
   }
 
+  /**
+   * Recursive method to execute binary search on an array
+   * @param array - Full array of Card
+   * @param x - The id of the card to be found
+   * @param low - Start the search with this value at 0
+   * @param high - Start the search with this value at array.size()-1
+   * @return - Position of the card, -1 if not present in the array
+   */
   public static int binarySearch(List<Card> array, String x, int low, int high) {
 
     if (high >= low) {

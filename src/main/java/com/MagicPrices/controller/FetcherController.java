@@ -32,7 +32,7 @@ public class FetcherController {
 
   public FetcherController() {}
   /**
-   * Fetch and upgrade prices related to a card by name
+   * Fetch and upgrade prices related to a card by name using the website's search function
    * @param cardName - Name of the card to be updated
    * @param aIsInStock - Search with the option "the card is in stock"
    * @param aPreferedNMCondition - Search with the option "the card is NM"
@@ -48,16 +48,27 @@ public class FetcherController {
     looseSearch = alooseSearch;
     System.out.println("------------------------------------------");
 
-    if(!updateConversionRate()) return;
+    if (driver == null) {
+      System.out.println("Error, no web driver was started, please enter 'rd' to attempt to open a new web driver.");
+      return;
+    }
+    
+    if(!updateConversionRate()) {
+      System.out.println("There were an error when updating the conversion rate.");
+      return;
+    }
 
-    if (updateCurrentTime() == null) return;
+    if (updateCurrentTime() == null) {
+      System.out.println("There were an error when updating the current time.");
+      return;
+    }
 
-    System.out.println("Seeking now "+cardName);
+    System.out.println("Fetching now "+cardName);
     int pagenb = 1;
     boolean success = true;
     while (success) {
       String url = generateURL(cardName, aIsInStock, aPreferedNMCondition, aPreferedFoilCondition, looseSearch, pagenb);
-      System.out.println("Seeking card at "+url+"\nConversion: "+conversionRateUSDToCAD+"\tTime: "+currentTime.toString());
+      System.out.println("Fetching card at "+url+"\nConversion: "+conversionRateUSDToCAD+"\tTime: "+currentTime.toString());
 
 
       Fetcher fetcher = new Fetcher(currentTime,url,conversionRateUSDToCAD,menu,system, database);
@@ -66,7 +77,6 @@ public class FetcherController {
       if (fastMode) success = false;
       pagenb++;
     }
-    //CardDatabaseController.printDatabase(database);
     System.out.println("Search done. Enter 'pd' to print database.");
   }
 
@@ -113,7 +123,17 @@ public class FetcherController {
     }
   }
   
+  /**
+   * Print a numbered list of all the cards found in a search url page
+   * @param url -  url website (search page)
+   * @param driver - Current WebsiteDriver
+   * @return - List of cards as WebElements found in the search url page
+   */
   public static List<WebElement> printPageFromURL(String url, WebDriver driver) {
+    if (driver == null) {
+      System.out.println("Error, no web driver is active, please enter 'rd' to attempt to open a new web driver.");
+      return null;
+    }
     Fetcher fetcher = new Fetcher(currentTime,url,conversionRateUSDToCAD,menu,system, database);
     List<WebElement> listOfCards = fetcher.discoverPage(url, driver);
     System.out.println("Card(s) at "+url);
@@ -134,6 +154,16 @@ public class FetcherController {
     return listOfCards;
   }
   
+  /**
+   * Generate a url link based on given parameters
+   * @param cardName - Name of the card
+   * @param aIsInStock - If the card is in stock
+   * @param aPreferedNMCondition - If the card will be shown as in Near-Mint condition
+   * @param aPreferedFoilCondition - If the card will be shown as in Foil condition
+   * @param alooseSearch - Only take the card's name in consideration for the search
+   * @param pagenb - the current page number of the search page
+   * @return - A String containing the full url
+   */
   public static String generateURL(String cardName, boolean aIsInStock, boolean aPreferedNMCondition, boolean aPreferedFoilCondition, boolean alooseSearch, int pagenb) {
     String url = "https://www.facetofacegames.com/search/?keyword="+cardName+"&pg="+pagenb+"&tab=Magic&product%20type=Singles";
 

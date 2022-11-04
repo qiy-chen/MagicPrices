@@ -21,7 +21,8 @@ public class MainController implements CommandLineRunner{
   private static WebDriver driver;
   private long startTime = 0;
   private long endTime = 0;
-  private String filePath = "./";
+  private String filePath = "./output/";
+  private static String IDLISTFILEXTENSION = ".idlist";
 
   @Override
   public void run(String... args) throws Exception {
@@ -36,8 +37,8 @@ public class MainController implements CommandLineRunner{
     System.out.println("Welcome.\nPlease input your command");
     //while(true) {
     while (inputReader.hasNext()) {
-      command = inputReader.nextLine().toLowerCase();
-      if (command.equals("fetchallacard")||command.equals("faac")) {
+      command = inputReader.nextLine().toLowerCase().trim();
+      if (command.equals("fetchallfast")||command.equals("faf")) {
         System.out.println("Please input your card name: ");
         String input = inputReader.nextLine().toLowerCase();
         if (input.equals("\\return")|input.equals("\\r")) continue;
@@ -109,13 +110,13 @@ public class MainController implements CommandLineRunner{
         FetcherController.printPageFromURL(input, driver);
         setEndTime(command);
       }
-      else if (command.equals("createlist")||command.equals("cl")) {
-        System.out.println("You will now create a list of cards from scratch. Press \\return or \\r when the list is complete");
+      else if (command.equals("createnewlist")||command.equals("cnl")) {
+        System.out.println("You will now create a list of cards from scratch. Press \\return or \\r when the list is complete.\nEnter your card name.");
         List<String> userList = new ArrayList<String>();
         while (inputReader.hasNext()) {
           String input = inputReader.nextLine();
           if (input.equals("\\return")|input.equals("\\r")) break;
-          System.out.println("Please select the correct card by entering the number before the name of the card. Press 'p' to go to the previous page and 'n' to go to the next page.");
+          System.out.println("Please select the correct card by entering the number before the name of the card. Press 'p' to go to the previous page, 'n' to go to the next page, \\return or \\r to cancel the search.");
           boolean activeSearch = true;
           int pagenb = 1;
           while (activeSearch) {
@@ -129,7 +130,10 @@ public class MainController implements CommandLineRunner{
             else if (cardNumber.equals("n")) {
               pagenb++;
             }
-            else if (cardNumber.equals("\\return")|cardNumber.equals("\\r")) activeSearch = false;
+            else if (cardNumber.equals("\\return")|cardNumber.equals("\\r")) {
+              System.out.println("Search is terminated.\nPlease enter your card name.");
+              activeSearch = false;
+            }
             else {
               int nb;
               try {
@@ -145,9 +149,23 @@ public class MainController implements CommandLineRunner{
           }
         }
         setStartTime();
-        if (userList.size()>0) FileManager.createIdListFromScratch(userList,filePath);
+        if (userList.size()>0) FileManager.saveFile(userList,filePath,IDLISTFILEXTENSION);
         setEndTime(command);
 
+      }
+      else if (command.equals("printfile")||command.equals("pf")) {
+        System.out.println("Please input your directory/file name");
+        String input = inputReader.nextLine().trim();
+        if (input.equals("\\return")|input.equals("\\r")) continue;
+        setStartTime();
+        FileManager.printFile(input);
+        setEndTime(command);
+      }
+      else if (command.equals("trackfile")||command.equals("tf")) {
+        System.out.println("Please input your file name");
+        String input = inputReader.nextLine();
+        if (input.equals("\\return")|input.equals("\\r")) continue;
+        setStartTime();
       }
       else printHelp();
 
@@ -156,18 +174,25 @@ public class MainController implements CommandLineRunner{
     if (driver!=null) driver.close();
   }
 
-  //}
+  /**
+   * Print all available user commands.
+   */
   private void printHelp() {
     System.out.println("All commands: \n"
         + "Command\t\t\tAbrievated\tUsage\n"
-        + "fetchallpage\t\tfapage\tFetch all the available price options from a card name search from the first page.\n"
+        + "\nFETCH COMMANDS\n"
+        + "fetchallfast\t\tfaf\tFetch all the available price options from a card name search from the first page.\n"
         + "fetchall\t\tfa\tFetch all the available price options from a card name search.\n"
-        + "discoverpageurl\tdpurl\tPrint the name, set and id of all cards on the page of target URL.\n"
+        + "\nDATABASE COMMANDS\n"
         + "printdatabase\t\tpd\tPrint all the cards in the database.\n"
         + "binarysearchdbbyid\tbsdid\tSearch the database by id using binary search.\n"
         + "linearsearchdbbyid\tlsdid\tSearch the database by id using linear search.\n"
         + "linearsearchdbbyname\tlsdn\tSearch the database by name using linear search.\n"
-        + "createlist\t\tcl\tCreate a list of cards from scratch.\n"
+        + "\nFILES COMMANDS\n"
+        + "createnewlist\t\tcnl\tCreate a list of cards from scratch.\n"
+        + "printfile\t\tpf\tPrint the content of every file from a path.\n"
+        + "trackfile\t\ttf\tAdd to the database the most recent prices from a list of cards.\n"
+        + "\nOTHER COMMANDS\n"
         + "restartdriver\t\trd\tRestart the web driver. Use it if the web driver hasn't started or if there are some issues with it.\n"
         + "\\return\t\t\t\\r\tGo to previous menu.\n"
         + "quit\t\t\tq\tClose the program.");

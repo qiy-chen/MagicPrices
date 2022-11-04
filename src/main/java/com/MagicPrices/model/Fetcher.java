@@ -2,15 +2,16 @@
 /*This code was generated using the UMPLE 1.31.1.5860.78bb27cc6 modeling language!*/
 
 package com.MagicPrices.model;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import com.MagicPrices.controller.CardDatabaseController;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.safari.SafariDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 // line 57 "../../../Fetcher.ump"
 public class Fetcher
@@ -275,61 +276,16 @@ public class Fetcher
     }
   }
 
-  // line 77 "../../../Fetcher.ump"
+  // line 78 "../../../Fetcher.ump"
    public boolean fetchAllPage(WebDriver driver){
     boolean success = false;
-//    try {
-//      WebDriverManager.chromedriver().setup();
-//      ChromeOptions chromeOptions = new ChromeOptions();
-//      chromeOptions.addArguments("--no-sandbox");
-//      chromeOptions.addArguments("--headless");
-//      chromeOptions.addArguments("--disable-gpu");
-//      driver = new ChromeDriver(chromeOptions);
-//    }
-//    catch (Exception e) {
-//      System.out.println(e);
-//      if (driver!=null) driver.quit();
-//      try {
-//        WebDriverManager.firefoxdriver().setup();
-//        FirefoxOptions firefoxptions = new FirefoxOptions();
-//        firefoxptions.addArguments("--no-sandbox");
-//        firefoxptions.addArguments("--headless");
-//        firefoxptions.addArguments("--disable-gpu");
-//        driver = new FirefoxDriver(firefoxptions);
-//      }
-//      catch (Exception f) {
-//        System.out.println("Error starting up web driver. Please ensure that either Firefox or Chrome is installed and allow remote automation tools is enabled before trying again.");
-//        System.out.println(f);
-//        success = false;
-//        if (driver!=null) driver.quit();
-//        return success;
-//      }
-//    }
-
     try {
       
-      //driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
-      driver.get(url);
-      try {
-        TimeUnit.SECONDS.sleep(3);
-      } catch (InterruptedException e1) {
-        e1.printStackTrace();
-        success = false;
-        return success;
-      }
-      
-      if (driver.findElement(By.className("hawk-results")).getText().contains("No Results")) {
-        success = false;
-        return success;
-      }
-      
       //Extract information
-      //System.out.println(driver.getPageSource());
       List<WebElement> ListOfCards = discoverPage(url,driver);
 
       for (WebElement card: ListOfCards) {
         System.out.println("Found a card! Now analyzing it");
-        //System.out.println(card.getText());
         String cardName;
         String cardSet;
         double concurrentPrice=0;
@@ -347,43 +303,27 @@ public class Fetcher
         }
         //Special case if the card is unique (scan)
         if (cardName.contains(" - Scan")){
-          condition = "Scan";
-          foiling = "Scan";
-          amountInStock = Integer.parseInt(card.findElement(By.className("hawkStock")).getDomAttribute("data-stock-num"));
-          double price = Double.parseDouble(card.findElement(By.className("retailPrice")).getText().replaceAll(java.util.regex.Matcher.quoteReplacement("CAD $"), "").replaceAll(",", ""));
-          //System.out.println("Added to the database: " + price +"\t"+ amountInStock +"\t"+ condition +"\t"+ foiling +"\t"+ fetchDate);
-          existingCard.addPrice(price, concurrentPrice, condition, amountInStock, foiling, fetchDate, fetcherSystem);
+          fetchSinglePrice(card, concurrentPrice, existingCard, "Scan");
         }
         //Special case if it's an Art Card
         else if(cardName.contains(" Art Card")) {
-          condition = "Art Card";
-          foiling = "Art Card";
-          amountInStock = Integer.parseInt(card.findElement(By.className("hawkStock")).getDomAttribute("data-stock-num"));
-          double price = Double.parseDouble(card.findElement(By.className("retailPrice")).getText().replaceAll(java.util.regex.Matcher.quoteReplacement("CAD $"), "").replaceAll(",", ""));
-          //System.out.println("Added to the database: " + price +"\t"+ amountInStock +"\t"+ condition +"\t"+ foiling +"\t"+ fetchDate);
-          existingCard.addPrice(price, concurrentPrice, condition, amountInStock, foiling, fetchDate, fetcherSystem);
+          fetchSinglePrice(card, concurrentPrice, existingCard, "Art Card");
         }
         else {
           List<List<String>> radioTable = new ArrayList<List<String>>();
-          //Search all the options that are available for that card, compile the result in a table
-          //populate the 2d table
+          //Search all the pricing options that are available for that card, compile the result in two different lists
           List<WebElement> ListOfConditions = card.findElements(By.cssSelector("[data-variant-name=condition]"));
           List<WebElement> ListOfFoiling = card.findElements(By.cssSelector("[data-variant-name=finish]"));
 
 
-          //Special case, no option available
+          //Special case where there is only a single price for a card, no pricing option available
           if (ListOfConditions.size()<1||ListOfFoiling.size()<1) {
-            condition = "N/A";
-            foiling = "\"N/A";
-            amountInStock = Integer.parseInt(card.findElement(By.className("hawkStock")).getDomAttribute("data-stock-num"));
-            double price = Double.parseDouble(card.findElement(By.className("retailPrice")).getText().replaceAll(java.util.regex.Matcher.quoteReplacement("CAD $"), "").replaceAll(",", ""));
-            //System.out.println("Added to the database: " + price +"\t"+ amountInStock +"\t"+ condition +"\t"+ foiling +"\t"+ fetchDate);
-            existingCard.addPrice(price, concurrentPrice, condition, amountInStock, foiling, fetchDate, fetcherSystem);
+            fetchSinglePrice(card, concurrentPrice, existingCard, "N/A");
             success=true;
             return success;
           }
           
-          //Create two rows of array
+          //Create two rows of lists
           radioTable.add(new ArrayList<String>());
           radioTable.add(new ArrayList<String>());
           //Populate the first row with card's available conditions
@@ -396,22 +336,13 @@ public class Fetcher
             radioTable.get(1).add(ListOfFoiling.get(i).getDomAttribute("value"));
           }
 
-          //for (List<String> a : radioTable) {
-           // String str = "";
-           // for (int i=0;i<a.size();i++) {
-           //   str+=a.get(i)+"|";
-           // }
-          //  System.out.println(str);
-          //}
-          //find the card price currently displayed on the website
+          //find the list of card price and stock status currently on the page
           List<WebElement> ListOfPrices = card.findElements(By.className("retailPrice"));
           List<WebElement> ListOfStockStatus = card.findElements(By.className("hawkStock"));
-          //for (WebElement a: ListOfStockStatus) {
-          //  System.out.println(a.getText());
-          //}
 
           int i = 0;
 
+          //Get the next available combination of foiling and condition and assign it to the next available price
           while (i < ListOfPrices.size()){
             for (int j=0; j<ListOfFoiling.size(); j++) {
               foiling = radioTable.get(1).get(j);
@@ -419,16 +350,8 @@ public class Fetcher
                 //Add the next price with the next combination of NM and Foil available for the card
                 condition = radioTable.get(0).get(k);
                 String strPrice = ListOfPrices.get(i).getText().trim();
-                //System.out.println("Price: " + strPrice);
                 double price = Double.parseDouble(strPrice.replaceAll(java.util.regex.Matcher.quoteReplacement("CAD $"), "").replaceAll(",", ""));
-                //if (!ListOfStockStatus.get(i).getText().equals("Out of Stock")) {
-                //There is some cards in stock
-                //  amountInStock = Integer.parseInt(ListOfStockStatus.get(i).getText().replaceAll(" In Stock", ""));
-                //}
                 amountInStock = Integer.parseInt(ListOfStockStatus.get(i).getDomAttribute("data-stock-num"));
-
-
-                //System.out.println("Added to the database: " + price +"\t"+ amountInStock +"\t"+ condition +"\t"+ foiling +"\t"+ fetchDate);
                 existingCard.addPrice(price, concurrentPrice, condition, amountInStock, foiling, fetchDate, fetcherSystem);
                 i++;
               }
@@ -438,7 +361,6 @@ public class Fetcher
         }
       }
       success = true;
-
     }
     catch (Exception e) {
       System.out.println("Error: "+e);
@@ -447,17 +369,39 @@ public class Fetcher
     return success;
   }
 
-  // line 248 "../../../Fetcher.ump"
+
+  /**
+   * 
+   * Method to get the list of cards as WebElement from a search result
+   * @param url - url must be derived from a search result page
+   * @param driver - Instance of the current WebDriver
+   * @return - List of WebElement of all cards found in the url content
+   */
+  // line 176 "../../../Fetcher.ump"
    public List<WebElement> discoverPage(String url, WebDriver driver){
     driver.get(url);
-     try {
-       TimeUnit.SECONDS.sleep(3);
-     } catch (InterruptedException e1) {
-       e1.printStackTrace();
-       return null;
-     }
+      WebDriverWait driverWait = new WebDriverWait(driver, Duration.ofSeconds(10));
+      driverWait.until(ExpectedConditions.   presenceOfElementLocated(By.className("hawk-pagination__current")));
      List<WebElement> listOfCards = driver.findElements(By.xpath("//div[@class='hawk-results__item']"));
      return listOfCards;
+  }
+
+
+  /**
+   * 
+   * Helper method to deal with card with only one pricing option
+   * @return - true if successful, false if there is a failure
+   */
+  // line 188 "../../../Fetcher.ump"
+   private boolean fetchSinglePrice(WebElement card, double concurrentPrice, Card existingCard, String fillerText){
+    boolean success = false;
+     String condition = fillerText;
+     String foiling = fillerText;
+     int amountInStock = Integer.parseInt(card.findElement(By.className("hawkStock")).getDomAttribute("data-stock-num"));
+     double price = Double.parseDouble(card.findElement(By.className("retailPrice")).getText().replaceAll(java.util.regex.Matcher.quoteReplacement("CAD $"), "").replaceAll(",", ""));
+     existingCard.addPrice(price, concurrentPrice, condition, amountInStock, foiling, fetchDate, fetcherSystem);
+     success = true;
+     return success;
   }
 
 

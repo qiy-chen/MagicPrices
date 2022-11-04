@@ -5,7 +5,7 @@ package com.MagicPrices.model;
 import java.time.LocalDateTime;
 import java.io.Serializable;
 
-// line 265 "../../../Fetcher.ump"
+// line 204 "../../../Fetcher.ump"
 public class Price implements java.io.Serializable
 {
 
