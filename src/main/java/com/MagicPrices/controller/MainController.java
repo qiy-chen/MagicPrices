@@ -3,9 +3,6 @@ package com.MagicPrices.controller;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import java.util.logging.Level;
-import javax.annotation.PostConstruct;
-import com.MagicPrices.MagicPricesApplication;
 import com.MagicPrices.model.Card;
 import com.MagicPrices.model.CardDatabase;
 import com.MagicPrices.model.FetcherSystem;
@@ -126,8 +123,8 @@ public class MainController implements CommandLineRunner{
             List<WebElement> listOfCards = FetcherController.printPageFromURL(url, driver);
             String cardNumber = inputReader.nextLine();
             if (cardNumber.equals("p")) {
-              if (pagenb>2) pagenb--;
-              else System.out.println("This is already the first page");
+              if (pagenb>1) pagenb--;
+              else System.out.println("This is already the first page.");
             }
             else if (cardNumber.equals("n")) {
               pagenb++;
@@ -137,19 +134,18 @@ public class MainController implements CommandLineRunner{
               int nb;
               try {
                 nb = Integer.parseInt(cardNumber);
-                if (nb >= listOfCards.size()) System.out.println("No card with such number.");
                 userList.add(Card.convertToCardId(listOfCards.get(nb)));
                 System.out.println("Successfully added "+Card.convertToCardId(listOfCards.get(nb))+"\nPlease enter your next entry or press \\return or \\r to terminate the search.");
                 activeSearch = false;
               }
               catch (Exception e) {
-                System.out.println("The input is not an integer");
+                System.out.println("Wrong input.");
               }
             }
           }
         }
         setStartTime();
-        FileManager.createIdListFromScratch(userList,filePath);
+        if (userList.size()>0) FileManager.createIdListFromScratch(userList,filePath);
         setEndTime(command);
 
       }
