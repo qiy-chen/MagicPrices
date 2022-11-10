@@ -13,11 +13,11 @@ import com.MagicPrices.repository.CardRepository;
 import com.MagicPrices.repository.PriceRepository;
 
 @SpringBootTest
-class PersistenceTests {
+public class PersistenceTests {
   @Autowired
-  private static CardRepository cardRepository;
+  private CardRepository cardRepository;
   @Autowired
-  private static PriceRepository priceRepository;
+  private PriceRepository priceRepository;
     
 @AfterEach
 public void cleanup() {
@@ -69,6 +69,13 @@ public void cleanup() {
       LocalDateTime fetchDate = LocalDateTime.now();
       String fetchDateString = fetchDate.toString();
       Price price = new Price();
+      price.setAmount(amount);
+      price.setConcurrentPrice(concurrentPrice);
+      price.setCondition(condition);
+      price.setAmountInStock(amountInStock);
+      price.setFoiling(foiling);
+      price.setFetchDate(fetchDate);
+      price.setFetchDateString(fetchDateString);
       price = priceRepository.save(price);
       Integer priceId = price.getPriceId();
       
