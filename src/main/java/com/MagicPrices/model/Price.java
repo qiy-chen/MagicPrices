@@ -3,23 +3,27 @@
 
 package com.MagicPrices.model;
 import java.time.LocalDateTime;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.Transient;
 import java.io.Serializable;
 
-// line 204 "../../../Fetcher.ump"
+// line 197 "../../../Fetcher.ump"
+@Entity
 public class Price implements java.io.Serializable
 {
-
-  //------------------------
-  // STATIC VARIABLES
-  //------------------------
-
-  private static int nextPriceId = 1;
 
   //------------------------
   // MEMBER VARIABLES
   //------------------------
 
   //Price Attributes
+  @Id
+  @GeneratedValue(strategy = GenerationType.AUTO)
+  private int priceId;
   private double amount;
   private double concurrentPrice;
   private String condition;
@@ -28,11 +32,10 @@ public class Price implements java.io.Serializable
   private LocalDateTime fetchDate;
   private String fetchDateString;
 
-  //Autounique Attributes
-  private int priceId;
-
   //Price Associations
+  @Transient
   private FetcherSystem fetcherSystem;
+  @ManyToOne
   private Card card;
 
   //------------------------
@@ -48,7 +51,6 @@ public class Price implements java.io.Serializable
     foiling = aFoiling;
     fetchDate = aFetchDate;
     fetchDateString = fetchDate.toString();
-    priceId = nextPriceId++;
     boolean didAddFetcherSystem = setFetcherSystem(aFetcherSystem);
     if (!didAddFetcherSystem)
     {
@@ -60,10 +62,22 @@ public class Price implements java.io.Serializable
       throw new RuntimeException("Unable to create price due to card. See http://manual.umple.org?RE002ViolationofAssociationMultiplicity.html");
     }
   }
+  
+  public Price() {
+    
+  }
 
   //------------------------
   // INTERFACE
   //------------------------
+
+  public boolean setPriceId(int aPriceId)
+  {
+    boolean wasSet = false;
+    priceId = aPriceId;
+    wasSet = true;
+    return wasSet;
+  }
 
   public boolean setAmount(double aAmount)
   {
@@ -121,6 +135,11 @@ public class Price implements java.io.Serializable
     return wasSet;
   }
 
+  public int getPriceId()
+  {
+    return priceId;
+  }
+
   public double getAmount()
   {
     return amount;
@@ -154,11 +173,6 @@ public class Price implements java.io.Serializable
   public String getFetchDateString()
   {
     return fetchDateString;
-  }
-
-  public int getPriceId()
-  {
-    return priceId;
   }
   /* Code from template association_GetOne */
   public FetcherSystem getFetcherSystem()

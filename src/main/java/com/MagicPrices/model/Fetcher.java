@@ -13,7 +13,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-// line 57 "../../../Fetcher.ump"
+// line 55 "../../../Fetcher.ump"
 public class Fetcher
 {
 
@@ -276,7 +276,7 @@ public class Fetcher
     }
   }
 
-  // line 78 "../../../Fetcher.ump"
+  // line 76 "../../../Fetcher.ump"
    public boolean fetchAllPage(WebDriver driver){
     boolean success = false;
     try {
@@ -377,11 +377,11 @@ public class Fetcher
    * @param driver - Instance of the current WebDriver
    * @return - List of WebElement of all cards found in the url content
    */
-  // line 176 "../../../Fetcher.ump"
+  // line 174 "../../../Fetcher.ump"
    public List<WebElement> discoverPage(String url, WebDriver driver){
     driver.get(url);
       WebDriverWait driverWait = new WebDriverWait(driver, Duration.ofSeconds(10));
-      driverWait.until(ExpectedConditions.   presenceOfElementLocated(By.className("hawk-pagination__current")));
+      driverWait.until(ExpectedConditions.presenceOfElementLocated(By.className("hawk-pagination__current")));
      List<WebElement> listOfCards = driver.findElements(By.xpath("//div[@class='hawk-results__item']"));
      return listOfCards;
   }
@@ -392,7 +392,7 @@ public class Fetcher
    * Helper method to deal with card with only one pricing option
    * @return - true if successful, false if there is a failure
    */
-  // line 188 "../../../Fetcher.ump"
+  // line 186 "../../../Fetcher.ump"
    private boolean fetchSinglePrice(WebElement card, double concurrentPrice, Card existingCard, String fillerText){
     boolean success = false;
      String condition = fillerText;

@@ -5,7 +5,7 @@ package com.MagicPrices.model;
 import java.util.*;
 import java.io.Serializable;
 
-// line 218 "../../../Fetcher.ump"
+// line 211 "../../../Fetcher.ump"
 public class CardDatabase implements java.io.Serializable
 {
 
@@ -26,7 +26,6 @@ public class CardDatabase implements java.io.Serializable
   private int databaseId;
 
   //CardDatabase Associations
-  private Reader reader;
   private Fetcher fetcher;
   private MainMenu mainMenu;
   private FetcherSystem fetcherSystem;
@@ -69,17 +68,6 @@ public class CardDatabase implements java.io.Serializable
   public int getDatabaseId()
   {
     return databaseId;
-  }
-  /* Code from template association_GetOne */
-  public Reader getReader()
-  {
-    return reader;
-  }
-
-  public boolean hasReader()
-  {
-    boolean has = reader != null;
-    return has;
   }
   /* Code from template association_GetOne */
   public Fetcher getFetcher()
@@ -137,33 +125,6 @@ public class CardDatabase implements java.io.Serializable
   {
     int index = cards.indexOf(aCard);
     return index;
-  }
-  /* Code from template association_SetOptionalOneToOne */
-  public boolean setReader(Reader aNewReader)
-  {
-    boolean wasSet = false;
-    if (reader != null && !reader.equals(aNewReader) && equals(reader.getCardDatabase()))
-    {
-      //Unable to setReader, as existing reader would become an orphan
-      return wasSet;
-    }
-
-    reader = aNewReader;
-    CardDatabase anOldCardDatabase = aNewReader != null ? aNewReader.getCardDatabase() : null;
-
-    if (!this.equals(anOldCardDatabase))
-    {
-      if (anOldCardDatabase != null)
-      {
-        anOldCardDatabase.reader = null;
-      }
-      if (reader != null)
-      {
-        reader.setCardDatabase(this);
-      }
-    }
-    wasSet = true;
-    return wasSet;
   }
   /* Code from template association_SetOptionalOneToOne */
   public boolean setFetcher(Fetcher aNewFetcher)
@@ -304,12 +265,6 @@ public class CardDatabase implements java.io.Serializable
   
   public void delete()
   {
-    Reader existingReader = reader;
-    reader = null;
-    if (existingReader != null)
-    {
-      existingReader.delete();
-    }
     Fetcher existingFetcher = fetcher;
     fetcher = null;
     if (existingFetcher != null)
@@ -335,7 +290,7 @@ public class CardDatabase implements java.io.Serializable
     }
   }
 
-  // line 226 "../../../Fetcher.ump"
+  // line 218 "../../../Fetcher.ump"
    public void setCards(List<Card> list){
     this.cards = list;
   }
@@ -346,7 +301,6 @@ public class CardDatabase implements java.io.Serializable
     return super.toString() + "["+
             "databaseId" + ":" + getDatabaseId()+ "]" + System.getProperties().getProperty("line.separator") +
             "  " + "cardsPriority" + "=" + (getCardsPriority() != null ? !getCardsPriority().equals(this)  ? getCardsPriority().toString().replaceAll("  ","    ") : "this" : "null") + System.getProperties().getProperty("line.separator") +
-            "  " + "reader = "+(getReader()!=null?Integer.toHexString(System.identityHashCode(getReader())):"null") + System.getProperties().getProperty("line.separator") +
             "  " + "fetcher = "+(getFetcher()!=null?Integer.toHexString(System.identityHashCode(getFetcher())):"null") + System.getProperties().getProperty("line.separator") +
             "  " + "mainMenu = "+(getMainMenu()!=null?Integer.toHexString(System.identityHashCode(getMainMenu())):"null") + System.getProperties().getProperty("line.separator") +
             "  " + "fetcherSystem = "+(getFetcherSystem()!=null?Integer.toHexString(System.identityHashCode(getFetcherSystem())):"null");

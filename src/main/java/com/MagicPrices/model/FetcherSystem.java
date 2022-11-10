@@ -29,7 +29,6 @@ public class FetcherSystem
   private MainMenu mainMenu;
   private List<Fetcher> fetchers;
   private List<Card> cards;
-  private List<Reader> readers;
   private List<Price> prices;
   private CardDatabase cardDatabase;
 
@@ -43,7 +42,6 @@ public class FetcherSystem
     id = nextId++;
     fetchers = new ArrayList<Fetcher>();
     cards = new ArrayList<Card>();
-    readers = new ArrayList<Reader>();
     prices = new ArrayList<Price>();
   }
 
@@ -137,36 +135,6 @@ public class FetcherSystem
   public int indexOfCard(Card aCard)
   {
     int index = cards.indexOf(aCard);
-    return index;
-  }
-  /* Code from template association_GetMany */
-  public Reader getReader(int index)
-  {
-    Reader aReader = readers.get(index);
-    return aReader;
-  }
-
-  public List<Reader> getReaders()
-  {
-    List<Reader> newReaders = Collections.unmodifiableList(readers);
-    return newReaders;
-  }
-
-  public int numberOfReaders()
-  {
-    int number = readers.size();
-    return number;
-  }
-
-  public boolean hasReaders()
-  {
-    boolean has = readers.size() > 0;
-    return has;
-  }
-
-  public int indexOfReader(Reader aReader)
-  {
-    int index = readers.indexOf(aReader);
     return index;
   }
   /* Code from template association_GetMany */
@@ -382,78 +350,6 @@ public class FetcherSystem
     return wasAdded;
   }
   /* Code from template association_MinimumNumberOfMethod */
-  public static int minimumNumberOfReaders()
-  {
-    return 0;
-  }
-  /* Code from template association_AddManyToOne */
-  public Reader addReader(MainMenu aMainMenu, CardDatabase aCardDatabase)
-  {
-    return new Reader(this, aMainMenu, aCardDatabase);
-  }
-
-  public boolean addReader(Reader aReader)
-  {
-    boolean wasAdded = false;
-    if (readers.contains(aReader)) { return false; }
-    FetcherSystem existingFetcherSystem = aReader.getFetcherSystem();
-    boolean isNewFetcherSystem = existingFetcherSystem != null && !this.equals(existingFetcherSystem);
-    if (isNewFetcherSystem)
-    {
-      aReader.setFetcherSystem(this);
-    }
-    else
-    {
-      readers.add(aReader);
-    }
-    wasAdded = true;
-    return wasAdded;
-  }
-
-  public boolean removeReader(Reader aReader)
-  {
-    boolean wasRemoved = false;
-    //Unable to remove aReader, as it must always have a fetcherSystem
-    if (!this.equals(aReader.getFetcherSystem()))
-    {
-      readers.remove(aReader);
-      wasRemoved = true;
-    }
-    return wasRemoved;
-  }
-  /* Code from template association_AddIndexControlFunctions */
-  public boolean addReaderAt(Reader aReader, int index)
-  {  
-    boolean wasAdded = false;
-    if(addReader(aReader))
-    {
-      if(index < 0 ) { index = 0; }
-      if(index > numberOfReaders()) { index = numberOfReaders() - 1; }
-      readers.remove(aReader);
-      readers.add(index, aReader);
-      wasAdded = true;
-    }
-    return wasAdded;
-  }
-
-  public boolean addOrMoveReaderAt(Reader aReader, int index)
-  {
-    boolean wasAdded = false;
-    if(readers.contains(aReader))
-    {
-      if(index < 0 ) { index = 0; }
-      if(index > numberOfReaders()) { index = numberOfReaders() - 1; }
-      readers.remove(aReader);
-      readers.add(index, aReader);
-      wasAdded = true;
-    } 
-    else 
-    {
-      wasAdded = addReaderAt(aReader, index);
-    }
-    return wasAdded;
-  }
-  /* Code from template association_MinimumNumberOfMethod */
   public static int minimumNumberOfPrices()
   {
     return 0;
@@ -576,13 +472,6 @@ public class FetcherSystem
       cards.remove(aCard);
     }
     
-    while (readers.size() > 0)
-    {
-      Reader aReader = readers.get(readers.size() - 1);
-      aReader.delete();
-      readers.remove(aReader);
-    }
-    
     while (prices.size() > 0)
     {
       Price aPrice = prices.get(prices.size() - 1);
@@ -599,7 +488,7 @@ public class FetcherSystem
     }
   }
 
-  // line 15 "../../../Fetcher.ump"
+  // line 14 "../../../Fetcher.ump"
    public LocalDateTime updateCurrentDate(){
     currentDate=LocalDateTime.now();
     return currentDate;

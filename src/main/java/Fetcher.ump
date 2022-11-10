@@ -7,7 +7,6 @@ class FetcherSystem
   1 <@>- 0..1 MainMenu;
   1 <@>- * Fetcher;
   1 <@>- * Card;
-  1 <@>- * Reader;
   1 <@>- * Price;
   1 <@>- 0..1 CardDatabase;
     public LocalDateTime updateCurrentDate()
@@ -20,9 +19,8 @@ class FetcherSystem
 class MainMenu
 {
 depend java.time.LocalDateTime;
-  autounique mainId;
+  	autounique mainId;
      dataPath="./";
-   1-- 0..1 Reader;
    
 }
 
@@ -175,7 +173,7 @@ depend org.openqa.selenium.support.ui.WebDriverWait;
    public List<WebElement> discoverPage(String url, WebDriver driver){
     driver.get(url);
       WebDriverWait driverWait = new WebDriverWait(driver, Duration.ofSeconds(10));
-      driverWait.until(ExpectedConditions.   presenceOfElementLocated(By.className("hawk-pagination__current")));
+      driverWait.until(ExpectedConditions.presenceOfElementLocated(By.className("hawk-pagination__current")));
      List<WebElement> listOfCards = driver.findElements(By.xpath("//div[@class='hawk-results__item']"));
      return listOfCards;
   }
@@ -196,15 +194,10 @@ depend org.openqa.selenium.support.ui.WebDriverWait;
    }
   }
 
-class Reader
-{
-  autounique readerId;
-}
-
 class Price
 {
 	depend java.time.LocalDateTime;
-	autounique priceId;
+	lazy int priceId;
   double amount;
   double concurrentPrice;
   condition;
@@ -218,7 +211,6 @@ class Price
 class CardDatabase
 {
   autounique databaseId;
-  1 -- 0..1 Reader;
   1 -- 0..1 Fetcher;
   1 -- 0..1 MainMenu;
   

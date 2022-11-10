@@ -4,7 +4,7 @@
 package com.MagicPrices.model;
 import java.time.LocalDateTime;
 
-// line 20 "../../../Fetcher.ump"
+// line 19 "../../../Fetcher.ump"
 public class MainMenu
 {
 
@@ -25,7 +25,6 @@ public class MainMenu
   private int mainId;
 
   //MainMenu Associations
-  private Reader reader;
   private FetcherSystem fetcherSystem;
   private Fetcher fetcher;
   private CardDatabase cardDatabase;
@@ -72,17 +71,6 @@ public class MainMenu
     return mainId;
   }
   /* Code from template association_GetOne */
-  public Reader getReader()
-  {
-    return reader;
-  }
-
-  public boolean hasReader()
-  {
-    boolean has = reader != null;
-    return has;
-  }
-  /* Code from template association_GetOne */
   public FetcherSystem getFetcherSystem()
   {
     return fetcherSystem;
@@ -102,33 +90,6 @@ public class MainMenu
   public CardDatabase getCardDatabase()
   {
     return cardDatabase;
-  }
-  /* Code from template association_SetOptionalOneToOne */
-  public boolean setReader(Reader aNewReader)
-  {
-    boolean wasSet = false;
-    if (reader != null && !reader.equals(aNewReader) && equals(reader.getMainMenu()))
-    {
-      //Unable to setReader, as existing reader would become an orphan
-      return wasSet;
-    }
-
-    reader = aNewReader;
-    MainMenu anOldMainMenu = aNewReader != null ? aNewReader.getMainMenu() : null;
-
-    if (!this.equals(anOldMainMenu))
-    {
-      if (anOldMainMenu != null)
-      {
-        anOldMainMenu.reader = null;
-      }
-      if (reader != null)
-      {
-        reader.setMainMenu(this);
-      }
-    }
-    wasSet = true;
-    return wasSet;
   }
   /* Code from template association_SetOneToOptionalOne */
   public boolean setFetcherSystem(FetcherSystem aNewFetcherSystem)
@@ -216,12 +177,6 @@ public class MainMenu
 
   public void delete()
   {
-    Reader existingReader = reader;
-    reader = null;
-    if (existingReader != null)
-    {
-      existingReader.delete();
-    }
     FetcherSystem existingFetcherSystem = fetcherSystem;
     fetcherSystem = null;
     if (existingFetcherSystem != null)
@@ -248,7 +203,6 @@ public class MainMenu
     return super.toString() + "["+
             "mainId" + ":" + getMainId()+ "," +
             "dataPath" + ":" + getDataPath()+ "]" + System.getProperties().getProperty("line.separator") +
-            "  " + "reader = "+(getReader()!=null?Integer.toHexString(System.identityHashCode(getReader())):"null") + System.getProperties().getProperty("line.separator") +
             "  " + "fetcherSystem = "+(getFetcherSystem()!=null?Integer.toHexString(System.identityHashCode(getFetcherSystem())):"null") + System.getProperties().getProperty("line.separator") +
             "  " + "fetcher = "+(getFetcher()!=null?Integer.toHexString(System.identityHashCode(getFetcher())):"null") + System.getProperties().getProperty("line.separator") +
             "  " + "cardDatabase = "+(getCardDatabase()!=null?Integer.toHexString(System.identityHashCode(getCardDatabase())):"null");

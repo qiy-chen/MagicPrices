@@ -6,9 +6,14 @@ import java.time.LocalDateTime;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.By;
 import java.util.*;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.Transient;
 import java.io.Serializable;
 
-// line 31 "../../../Fetcher.ump"
+// line 29 "../../../Fetcher.ump"
+@Entity
 public class Card implements java.io.Serializable
 {
 
@@ -17,15 +22,20 @@ public class Card implements java.io.Serializable
   //------------------------
 
   //Card Attributes
+  @Id
   private String cardId;
   private String name;
   private String category;
   private transient Comparator<Price> pricesPriority;
 
   //Card Associations
+  @OneToMany
   private List<Price> prices;
+  @Transient
   private CardDatabase cardDatabase;
+  @Transient
   private Fetcher fetcher;
+  @Transient
   private FetcherSystem fetcherSystem;
 
   //------------------------
@@ -50,6 +60,12 @@ public class Card implements java.io.Serializable
     {
       throw new RuntimeException("Unable to create card due to fetcherSystem. See http://manual.umple.org?RE002ViolationofAssociationMultiplicity.html");
     }
+  }
+  
+  public Card() {
+    pricesPriority = 
+        Comparator.comparing(Price::getFetchDateString);
+      prices = new ArrayList<Price>();
   }
 
   //------------------------
@@ -309,7 +325,7 @@ public class Card implements java.io.Serializable
     }
   }
 
-  // line 44 "../../../Fetcher.ump"
+  // line 42 "../../../Fetcher.ump"
    public boolean setCardId(WebElement card){
     boolean wasSet = false;
     cardId = Card.convertToCardId(card);
@@ -317,7 +333,7 @@ public class Card implements java.io.Serializable
     return wasSet;
   }
 
-  // line 51 "../../../Fetcher.ump"
+  // line 49 "../../../Fetcher.ump"
    public static  String convertToCardId(WebElement card){
     return card.findElement(By.tagName("a")).getDomAttribute("href").replaceAll("https://www.facetofacegames.com/", "").replaceAll("/","");
   }
