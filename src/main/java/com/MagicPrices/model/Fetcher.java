@@ -381,7 +381,7 @@ public class Fetcher
    public List<WebElement> discoverPage(String url, WebDriver driver){
     driver.get(url);
       WebDriverWait driverWait = new WebDriverWait(driver, Duration.ofSeconds(10));
-      driverWait.until(ExpectedConditions.   presenceOfElementLocated(By.className("hawk-pagination__current")));
+      driverWait.until(ExpectedConditions.   presenceOfElementLocated(By.className("retailPrice")));
      List<WebElement> listOfCards = driver.findElements(By.xpath("//div[@class='hawk-results__item']"));
      return listOfCards;
   }
