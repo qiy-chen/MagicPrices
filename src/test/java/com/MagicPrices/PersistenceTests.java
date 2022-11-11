@@ -58,7 +58,6 @@ public void cleanup() {
       card.setCardId(cardId);
       card.setCategory(cardSet);
       card.setName(cardName);
-      
       cardRepository.save(card);
       
       double amount = 10.00;

@@ -7,9 +7,12 @@ import com.MagicPrices.model.Card;
 import com.MagicPrices.model.CardDatabase;
 import com.MagicPrices.model.FetcherSystem;
 import com.MagicPrices.model.MainMenu;
+import com.MagicPrices.repository.CardRepository;
+import com.MagicPrices.repository.PriceRepository;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.safari.SafariDriver;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -23,6 +26,10 @@ public class MainController implements CommandLineRunner{
   private long endTime = 0;
   private String filePath = "./output/";
   private static String IDLISTFILEXTENSION = ".idlist";
+  @Autowired
+  private CardRepository cardRepository;
+  @Autowired
+  private PriceRepository priceRepository;
 
   @Override
   public void run(String... args) throws Exception {
@@ -32,6 +39,11 @@ public class MainController implements CommandLineRunner{
     MainController.getWebDriver();
 
     Scanner inputReader = new Scanner(System.in);
+    FetcherController fetcherController = new FetcherController();
+    fetcherController.setRepositories(cardRepository, priceRepository);
+    CardDatabaseController cardDatabaseController = new CardDatabaseController();
+    cardDatabaseController.setRepositories(cardRepository, priceRepository);
+    FileManager fileManager = new FileManager();
     String command = "";
     //Intro
     System.out.println("Welcome.\nPlease input your command");
@@ -43,7 +55,7 @@ public class MainController implements CommandLineRunner{
         String input = inputReader.nextLine().toLowerCase();
         if (input.equals("\\return")|input.equals("\\r")) continue;
         setStartTime();
-        FetcherController.fetchCardByCardName(input,driver);
+        fetcherController.fetchCardByCardName(input,driver);
         setEndTime(command);
       }
       if (command.equals("fetchall")||command.equals("fa")) {
@@ -51,50 +63,47 @@ public class MainController implements CommandLineRunner{
         String input = inputReader.nextLine().toLowerCase();
         if (input.equals("\\return")|input.equals("\\r")) continue;
         setStartTime();
-        FetcherController.fetchCardByCardName(input,false,true,false,false,true,driver);
+        fetcherController.fetchCardByCardName(input,false,true,false,false,true,driver);
         setEndTime(command);
       }
       else if (command.equals("quit")||command.equals("q")) break;
       //else if (command.equals("sortdatabase")||command.equals("sd")) CardDatabaseController.rebuilDatabase(database);
-      else if (command.equals("printdatabase")||command.equals("pd")) CardDatabaseController.printDatabase(database);
-      else if (command.equals("binarysearchdbbyid")||command.equals("bsdid")) {
-        System.out.println("Please input your card id: ");
-        String input = inputReader.nextLine().toLowerCase();
-        if (input.equals("\\return")|input.equals("\\r")) continue;
-
-        setStartTime();
-        Card card = CardDatabaseController.findCardByIdBinarySearch(input);
-        if (card == null) {
-          System.out.println("Card not found. Please ensure that the id is correct and the database is sorted when using binary search.");
-
-        }
-        else CardDatabaseController.printCard(card);
-        setEndTime(command);
-      }
-      else if (command.equals("linearsearchdbbyid")||command.equals("lsdid")) {
+      else if (command.equals("printrepository")||command.equals("pr")) cardDatabaseController.printRepository();
+      else if (command.equals("searchbyid")||command.equals("sbid")) {
         System.out.println("Please input your card id: ");
         String input = inputReader.nextLine().toLowerCase();
         if (input.equals("\\return")|input.equals("\\r")) continue;
         setStartTime();
-        Card card = CardDatabaseController.findCardById(input);
+        Card card = cardDatabaseController.searchRepositoryById(input);;
         if (card == null) {
           System.out.println("Card not found. Please ensure that the id is correct.");
-
         }
-        else CardDatabaseController.printCard(card);
+        else cardDatabaseController.printCard(card);
         setEndTime(command);
       }
-      else if (command.equals("linearsearchdbbyname")||command.equals("lsdn")) {
+      else if (command.equals("searchbyname")||command.equals("sbn")) {
         System.out.println("Please input your card name: ");
         String input = inputReader.nextLine().toLowerCase().replaceAll(" ", "");
         if (input.equals("\\return")|input.equals("\\r")) continue;
         setStartTime();
-        List<Card> cards = CardDatabaseController.findCardsByName(input);
+        List<Card> cards = cardDatabaseController.searchRepositoryByName(input);
         if (cards.size() == 0) {
           System.out.println("No card found. Please ensure that the name is correct.");
 
         }
-        else CardDatabaseController.printCards(cards);
+        else cardDatabaseController.printCards(cards);
+        setEndTime(command);
+      }
+      else if (command.equals("clearallrepositories")||command.equals("car")) {
+        setStartTime();
+        cardDatabaseController.clearAllRepositories();
+        System.out.println("All repositories have been cleared.");
+        setEndTime(command);
+      }
+      else if (command.equals("clearprices")||command.equals("cp")) {
+        setStartTime();
+        cardDatabaseController.clearPrices();
+        System.out.println("All prices have been cleared.");
         setEndTime(command);
       }
       else if (command.equals("restartdriver")||command.equals("rd")) {
@@ -107,7 +116,7 @@ public class MainController implements CommandLineRunner{
         String input = inputReader.nextLine();
         if (input.equals("\\return")|input.equals("\\r")) continue;
         setStartTime();
-        FetcherController.printPageFromURL(input, driver);
+        fetcherController.printPageFromURL(input, driver);
         setEndTime(command);
       }
       else if (command.equals("createnewlist")||command.equals("cnl")) {
@@ -121,7 +130,7 @@ public class MainController implements CommandLineRunner{
           int pagenb = 1;
           while (activeSearch) {
             String url = FetcherController.generateURL(input, false, false, false, true, pagenb);
-            List<WebElement> listOfCards = FetcherController.printPageFromURL(url, driver);
+            List<WebElement> listOfCards = fetcherController.printPageFromURL(url, driver);
             String cardNumber = inputReader.nextLine();
             if (cardNumber.equals("p")) {
               if (pagenb>1) pagenb--;
@@ -149,7 +158,7 @@ public class MainController implements CommandLineRunner{
           }
         }
         setStartTime();
-        if (userList.size()>0) FileManager.saveFile(userList,filePath,IDLISTFILEXTENSION);
+        if (userList.size()>0) fileManager.saveFile(userList,filePath,IDLISTFILEXTENSION);
         setEndTime(command);
 
       }
@@ -158,7 +167,7 @@ public class MainController implements CommandLineRunner{
         String input = inputReader.nextLine().trim();
         if (input.equals("\\return")|input.equals("\\r")) continue;
         setStartTime();
-        FileManager.printFile(input);
+        fileManager.printFile(input);
         setEndTime(command);
       }
       else if (command.equals("trackfile")||command.equals("tf")) {
@@ -183,15 +192,16 @@ public class MainController implements CommandLineRunner{
         + "\nFETCH COMMANDS\n"
         + "fetchallfast\t\tfaf\tFetch all the available price options from a card name search from the first page.\n"
         + "fetchall\t\tfa\tFetch all the available price options from a card name search.\n"
-        + "\nDATABASE COMMANDS\n"
-        + "printdatabase\t\tpd\tPrint all the cards in the database.\n"
-        + "binarysearchdbbyid\tbsdid\tSearch the database by id using binary search.\n"
-        + "linearsearchdbbyid\tlsdid\tSearch the database by id using linear search.\n"
-        + "linearsearchdbbyname\tlsdn\tSearch the database by name using linear search.\n"
+        + "\nREPOSITORY COMMANDS\n"
+        + "printrepository\t\tpr\tPrint all the cards in the repository.\n"
+        + "searchbyid\t\tsbid\tSearch the repository by id.\n"
+        + "searchbyname\t\tsbn\tSearch the repository by name.\n"
+        + "clearallrepositories\t\tcar\tClear all repositories.\n"
+        + "clearprices\t\tcp\tClear all registered prices.\n"
         + "\nFILES COMMANDS\n"
         + "createnewlist\t\tcnl\tCreate a list of cards from scratch.\n"
         + "printfile\t\tpf\tPrint the content of every file from a path.\n"
-        + "trackfile\t\ttf\tAdd to the database the most recent prices from a list of cards.\n"
+        + "trackfile\t\ttf\tAdd to the repository the most recent prices from a list of cards.\n"
         + "\nOTHER COMMANDS\n"
         + "restartdriver\t\trd\tRestart the web driver. Use it if the web driver hasn't started or if there are some issues with it.\n"
         + "\\return\t\t\t\\r\tGo to previous menu.\n"
@@ -227,7 +237,7 @@ public class MainController implements CommandLineRunner{
         driver = new SafariDriver();
       }
       catch (Exception e){
-        System.out.println("Error when starting up web driver. Please make sure that the browser support remote automation and try again.\nError code:");
+        System.out.println("Error when starting up web driver. Please check the error below.\nError message:");
         System.out.println(e);
       }
     }

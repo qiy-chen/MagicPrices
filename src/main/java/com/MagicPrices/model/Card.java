@@ -6,7 +6,9 @@ import java.time.LocalDateTime;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.By;
 import java.util.*;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Transient;
@@ -29,7 +31,7 @@ public class Card implements java.io.Serializable
   private transient Comparator<Price> pricesPriority;
 
   //Card Associations
-  @OneToMany
+  @OneToMany(fetch = FetchType.EAGER,cascade = {CascadeType.ALL})
   private List<Price> prices;
   @Transient
   private CardDatabase cardDatabase;

@@ -7,6 +7,8 @@ import com.MagicPrices.model.Fetcher;
 import com.MagicPrices.model.FetcherSystem;
 import com.MagicPrices.model.MainMenu;
 import com.MagicPrices.model.Price;
+import com.MagicPrices.repository.CardRepository;
+import com.MagicPrices.repository.PriceRepository;
 import com.gargoylesoftware.htmlunit.*;
 import com.gargoylesoftware.htmlunit.html.*;
 import com.gargoylesoftware.htmlunit.javascript.SilentJavaScriptErrorListener;
@@ -16,19 +18,24 @@ import java.util.List;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class FetcherController {
 
-  private static FetcherSystem system = MainController.getFetcherSystem();
-  private static MainMenu menu = MainController.getMainMenu();
-  private static CardDatabase database = MainController.getCardDatabase();
-  private static double conversionRateUSDToCAD;
-  private static LocalDateTime currentTime;
-  private static boolean preferedInStock = true;
-  private static boolean preferedNMCondition = true;
-  private static boolean preferedFoilCondition = false;
-  private static boolean fastMode = false;
-  private static boolean looseSearch;
+  private FetcherSystem system = MainController.getFetcherSystem();
+  private MainMenu menu = MainController.getMainMenu();
+  private CardDatabase database = MainController.getCardDatabase();
+  private double conversionRateUSDToCAD;
+  private LocalDateTime currentTime;
+  private boolean preferedInStock = true;
+  private boolean preferedNMCondition = true;
+  private boolean preferedFoilCondition = false;
+  private boolean fastMode = false;
+  private boolean looseSearch;
+  
+  private Fetcher fetcher;
+  private CardRepository cardRepository;
+  private PriceRepository priceRepository;
 
   public FetcherController() {}
   /**
@@ -40,7 +47,7 @@ public class FetcherController {
    * @param aFastMode - Search only the first page if true
    * @return Card object that is being updated
    */
-  public static void fetchCardByCardName(String cardName, boolean aIsInStock, boolean aPreferedNMCondition, boolean aPreferedFoilCondition,boolean aFastMode, boolean alooseSearch,WebDriver driver) {
+  public void fetchCardByCardName(String cardName, boolean aIsInStock, boolean aPreferedNMCondition, boolean aPreferedFoilCondition,boolean aFastMode, boolean alooseSearch,WebDriver driver) {
     preferedInStock = aIsInStock;
     preferedNMCondition = aPreferedNMCondition;
     preferedFoilCondition = aPreferedFoilCondition;
@@ -71,13 +78,14 @@ public class FetcherController {
       System.out.println("Fetching card at "+url+"\nConversion: "+conversionRateUSDToCAD+"\tTime: "+currentTime.toString());
 
 
-      Fetcher fetcher = new Fetcher(currentTime,url,conversionRateUSDToCAD,menu,system, database);
+      fetcher = new Fetcher(currentTime,url,conversionRateUSDToCAD,menu,system, database);
+      fetcher.setRepositories(cardRepository, priceRepository);
       success = fetcher.fetchAllPage(driver);
       fetcher.delete();
       if (fastMode) success = false;
       pagenb++;
     }
-    System.out.println("Search done. Enter 'pd' to print database.");
+    System.out.println("Search done. Enter 'pr' to print repository.");
   }
 
 
@@ -86,7 +94,7 @@ public class FetcherController {
    * @param cardName - Name of the card to be updated
    * @return Card object that is being updated
    */
-  public static void fetchCardByCardName(String cardName,WebDriver driver) {
+  public void fetchCardByCardName(String cardName,WebDriver driver) {
     fetchCardByCardName(cardName,false,true,false,true,true,driver);
   }
 
@@ -94,7 +102,7 @@ public class FetcherController {
    * Update the current conversion rate (between USD and CAD)
    * @return true if success, false if there is an error
    */
-  public static boolean updateConversionRate() {
+  public boolean updateConversionRate() {
     String from = "usd";
     String to = "cad";
     WebClient webClient = new WebClient(BrowserVersion.CHROME);
@@ -129,7 +137,7 @@ public class FetcherController {
    * @param driver - Current WebsiteDriver
    * @return - List of cards as WebElements found in the search url page
    */
-  public static List<WebElement> printPageFromURL(String url, WebDriver driver) {
+  public List<WebElement> printPageFromURL(String url, WebDriver driver) {
     if (driver == null) {
       System.out.println("Error, no web driver is active, please enter 'rd' to attempt to open a new web driver.");
       return null;
@@ -182,8 +190,13 @@ public class FetcherController {
    * Update the current time
    * @return LocalDateTime of the current time
    */
-  public static LocalDateTime updateCurrentTime() {
+  public LocalDateTime updateCurrentTime() {
     return currentTime = system.updateCurrentDate();
+  }
+  
+  public void setRepositories(CardRepository cardRepository, PriceRepository priceRepository) {
+    this.cardRepository = cardRepository;
+    this.priceRepository = priceRepository;
   }
 
 }

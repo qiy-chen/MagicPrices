@@ -21,9 +21,9 @@ import com.MagicPrices.model.MainMenu;
 
 
 public class FileManager {
-  private static FetcherSystem system = MainController.getFetcherSystem();
-  private static MainMenu menu = MainController.getMainMenu();
-  private static CardDatabase database = MainController.getCardDatabase();
+  private FetcherSystem system = MainController.getFetcherSystem();
+  private MainMenu menu = MainController.getMainMenu();
+  private CardDatabase database = MainController.getCardDatabase();
   public FileManager() {}
 
   /**
@@ -33,7 +33,7 @@ public class FileManager {
    * @param fileExt - extension of the file that will be created
    * @return - true if success, false if there is an error
    */
-  public static boolean saveFile(List<String> userList, String path,String fileExt){
+  public boolean saveFile(List<String> userList, String path,String fileExt){
     boolean success = false;
     List<String> lines = new ArrayList<String>(userList);
     new File(path).mkdirs();
@@ -57,7 +57,7 @@ public class FileManager {
    * @param path - path name of the file/directory
    * @return - true if successful, false if there is an error
    */
-  public static boolean printFile(String path) {
+  public boolean printFile(String path) {
     boolean success = false;
     List<File> listFiles = new ArrayList<File>();
     listFiles = getFilesFromDirectory(path, listFiles);
@@ -86,7 +86,7 @@ public class FileManager {
    * @param path - path name of the directory or file to explore
    * @return - List of File in the directory path
    */
-  public static List<File> getFilesFromDirectory(String path, List<File> listFiles) {
+  public List<File> getFilesFromDirectory(String path, List<File> listFiles) {
     try {
       File file = new File(path);
       //Base case

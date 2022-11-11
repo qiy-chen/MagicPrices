@@ -5,6 +5,8 @@ package com.MagicPrices.model;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import com.MagicPrices.controller.CardDatabaseController;
+import com.MagicPrices.repository.CardRepository;
+import com.MagicPrices.repository.PriceRepository;
 import java.util.ArrayList;
 import java.util.List;
 import org.openqa.selenium.By;
@@ -12,6 +14,8 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 // line 57 "../../../Fetcher.ump"
 public class Fetcher
@@ -40,6 +44,12 @@ public class Fetcher
   private FetcherSystem fetcherSystem;
   private Card card;
   private CardDatabase cardDatabase;
+  
+  //Repositories
+  @Autowired
+  private CardRepository cardRepository;
+  @Autowired
+  private PriceRepository priceRepository;
 
   //------------------------
   // CONSTRUCTOR
@@ -283,11 +293,13 @@ public class Fetcher
       
       //Extract information
       List<WebElement> ListOfCards = discoverPage(url,driver);
-
+      
+      if (ListOfCards.size()<1) return success;
       for (WebElement card: ListOfCards) {
         System.out.println("Found a card! Now analyzing it");
         String cardName;
         String cardSet;
+        String cardId;
         double concurrentPrice=0;
         String condition;
         String foiling;
@@ -297,9 +309,15 @@ public class Fetcher
         WebElement cardSetHTML = card.findElement(By.className("hawk-results__hawk-contentSubtitle"));
         cardSet = cardSetHTML.getText().trim();
 
-        Card existingCard = CardDatabaseController.findCardById(Card.convertToCardId(card));
+        cardId = Card.convertToCardId(card);
+        //Card existingCard = CardDatabaseController.findCardById(Card.convertToCardId(card));
+        Card existingCard = cardRepository.findCardByCardId(cardId);
         if (existingCard ==null) {
-          existingCard = new Card(Card.convertToCardId(card), cardName, cardSet, cardDatabase, fetcherSystem);
+          //Card existingCard = CardDatabaseController.findCardById(Card.convertToCardId(card));
+          existingCard = new Card();
+          existingCard.setCardId(cardId);
+          existingCard.setCategory(cardSet);
+          existingCard.setName(cardName);
         }
         //Special case if the card is unique (scan)
         if (cardName.contains(" - Scan")){
@@ -350,9 +368,20 @@ public class Fetcher
                 //Add the next price with the next combination of NM and Foil available for the card
                 condition = radioTable.get(0).get(k);
                 String strPrice = ListOfPrices.get(i).getText().trim();
-                double price = Double.parseDouble(strPrice.replaceAll(java.util.regex.Matcher.quoteReplacement("CAD $"), "").replaceAll(",", ""));
+                double amount = Double.parseDouble(strPrice.replaceAll(java.util.regex.Matcher.quoteReplacement("CAD $"), "").replaceAll(",", ""));
                 amountInStock = Integer.parseInt(ListOfStockStatus.get(i).getDomAttribute("data-stock-num"));
-                existingCard.addPrice(price, concurrentPrice, condition, amountInStock, foiling, fetchDate, fetcherSystem);
+                //existingCard.addPrice(price, concurrentPrice, condition, amountInStock, foiling, fetchDate, fetcherSystem);
+                Price price = new Price();
+                price.setAmount(amount);
+                price.setConcurrentPrice(concurrentPrice);
+                price.setCondition(condition);
+                price.setAmountInStock(amountInStock);
+                price.setFoiling(foiling);
+                price.setFetchDate(fetchDate);
+                price.setFetchDateString(fetchDate.toString());
+                price.setCard(existingCard);
+                existingCard = cardRepository.save(existingCard);
+                price = priceRepository.save(price);
                 i++;
               }
             }
@@ -380,9 +409,12 @@ public class Fetcher
   // line 176 "../../../Fetcher.ump"
    public List<WebElement> discoverPage(String url, WebDriver driver){
     driver.get(url);
+      List<WebElement> listOfCards = new ArrayList();
       WebDriverWait driverWait = new WebDriverWait(driver, Duration.ofSeconds(10));
-      driverWait.until(ExpectedConditions.   presenceOfElementLocated(By.className("retailPrice")));
-     List<WebElement> listOfCards = driver.findElements(By.xpath("//div[@class='hawk-results__item']"));
+      WebElement results = driverWait.until(ExpectedConditions.presenceOfElementLocated(By.className("hawk-results")));
+      //If no results, return immediately
+      if (results.getText().trim().equals("No Results")) return listOfCards;
+      listOfCards = driverWait.until(ExpectedConditions.presenceOfElementLocated(By.className("retailPrice"))).findElements(By.xpath("//div[@class='hawk-results__item']"));
      return listOfCards;
   }
 
@@ -398,11 +430,27 @@ public class Fetcher
      String condition = fillerText;
      String foiling = fillerText;
      int amountInStock = Integer.parseInt(card.findElement(By.className("hawkStock")).getDomAttribute("data-stock-num"));
-     double price = Double.parseDouble(card.findElement(By.className("retailPrice")).getText().replaceAll(java.util.regex.Matcher.quoteReplacement("CAD $"), "").replaceAll(",", ""));
-     existingCard.addPrice(price, concurrentPrice, condition, amountInStock, foiling, fetchDate, fetcherSystem);
+     double amount = Double.parseDouble(card.findElement(By.className("retailPrice")).getText().replaceAll(java.util.regex.Matcher.quoteReplacement("CAD $"), "").replaceAll(",", ""));
+     //existingCard.addPrice(price, concurrentPrice, condition, amountInStock, foiling, fetchDate, fetcherSystem);
+     Price price = new Price();
+     price.setAmount(amount);
+     price.setConcurrentPrice(concurrentPrice);
+     price.setCondition(condition);
+     price.setAmountInStock(amountInStock);
+     price.setFoiling(foiling);
+     price.setFetchDate(fetchDate);
+     price.setFetchDateString(fetchDate.toString());
+     price.setCard(existingCard);
+     existingCard = cardRepository.save(existingCard);
+     price = priceRepository.save(price);
      success = true;
      return success;
   }
+   
+   public void setRepositories(CardRepository cardRepository, PriceRepository priceRepository) {
+     this.cardRepository = cardRepository;
+     this.priceRepository = priceRepository;
+   }
 
 
   public String toString()

@@ -2,16 +2,23 @@ package com.MagicPrices.controller;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.hibernate.Hibernate;
+import org.springframework.transaction.annotation.Transactional;
 import com.MagicPrices.model.Card;
 import com.MagicPrices.model.CardDatabase;
 import com.MagicPrices.model.FetcherSystem;
 import com.MagicPrices.model.MainMenu;
 import com.MagicPrices.model.Price;
+import com.MagicPrices.repository.CardRepository;
+import com.MagicPrices.repository.PriceRepository;
 
 public class CardDatabaseController {
-  private static FetcherSystem system = MainController.getFetcherSystem();
-  private static MainMenu menu = MainController.getMainMenu();
-  private static CardDatabase database = MainController.getCardDatabase();
+  private FetcherSystem system = MainController.getFetcherSystem();
+  private MainMenu menu = MainController.getMainMenu();
+  private CardDatabase database = MainController.getCardDatabase();
+  
+  private CardRepository cardRepository;
+  private PriceRepository priceRepository;
 
   public CardDatabaseController() {
 
@@ -22,7 +29,8 @@ public class CardDatabaseController {
    * @param cardId - card to be found using it's id
    * @return the card's object, null if not found
    */
-  public static Card findCardById(String cardId) {
+  @Deprecated
+  public Card findCardById(String cardId) {
     for (int i = 0; i<database.getCards().size();i++) {
       if (database.getCard(i).getCardId().equals(cardId)) return database.getCard(i);
     }
@@ -34,7 +42,8 @@ public class CardDatabaseController {
    * @param cardId - list of cards to be found matching the id given
    * @return list of cards matching the id
    */
-  public static List<Card> findCardsById(String cardId) {
+  @Deprecated
+  public List<Card> findCardsById(String cardId) {
     List<Card> listOfCards = new ArrayList<Card>();
     for (int i = 0; i<database.getCards().size();i++) {
       if (database.getCard(i).getCardId().contains(cardId))
@@ -48,7 +57,8 @@ public class CardDatabaseController {
    * @param cardId - list of cards to be found matching the name given
    * @return list of cards matching the name
    */
-  public static List<Card> findCardsByName(String cardName) {
+  @Deprecated
+  public List<Card> findCardsByName(String cardName) {
     List<Card> listOfCards = new ArrayList<Card>();
     for (int i = 0; i<database.getCards().size();i++) {
       if (database.getCard(i).getName().toLowerCase().replaceAll(" ", "").contains(cardName))
@@ -62,40 +72,45 @@ public class CardDatabaseController {
    * @param cardId - card to be found using it's id
    * @return the card's object, null if not found
    */
-  public static Card findCardByIdBinarySearch(String cardId) {
+  @Deprecated
+  public Card findCardByIdBinarySearch(String cardId) {
     int index = binarySearch(database.getCards(), cardId, 0, database.getCards().size()-1);
     if (index == -1) return null;
     else return database.getCard(index);
   }
 
   /**
-   * Print the content of the database if not empty
+   * Print the content of the repository if not empty
    * @param database - database to be printed
    */
-  public static void printDatabase(CardDatabase database) {
+
+  public void printRepository() {
     //print all cards and their prices
-    System.out.println("Database Content:");
-    System.out.println("--------------------------------------");
-    if (!database.hasCards()) System.out.println("The database is empty.");
-    for (Card card: database.getCards()) {
-      System.out.println("Prices of "+card.getName()+" | "+card.getCategory());
-      System.out.println("(Card Id: "+card.getCardId()+")");
-      System.out.println("--------------------------------------");
-      System.out.println("Price\tIn Stock\tIs NM\tFoil\tDate");
-      System.out.println("--------------------------------------");
-      for (Price price: card.getPrices()) {
-        System.out.println(price.getAmount() +"\t"+ price.getAmountInStock() +"\t\t"+ price.getCondition() +"\t"+ price.getFoiling() +"\t"+ price.getFetchDate());
-      }
-      System.out.println("--------------------------------------");
-    }
-    System.out.println("--------------------------------------");
+    List<Card> list = (List<Card>) cardRepository.findAll();
+    printCards(list);
   }
+
+  public Card searchRepositoryById(String cardId) {
+    Card card = cardRepository.findCardByCardId(cardId);
+    return card;
+  }
+  
+  public List<Card> searchRepositoryByName(String cardName) {
+    List<Card> list = (List<Card>) cardRepository.findAll();
+    List<Card> resultList = new ArrayList<Card>();
+    for (Card c: list) {
+      if (c.getName().toLowerCase().replaceAll(" ", "").contains(cardName)) resultList.add(c);
+    }
+    return resultList;
+  }
+  
+  
 
   /**
    * Print all the prices of a card
    * @param card - Card to be printed
    */
-  public static void printCard(Card card) {
+  public void printCard(Card card) {
     List<Card> list = new ArrayList<Card>();
     list.add(card);
     printCards(list);
@@ -105,23 +120,44 @@ public class CardDatabaseController {
    * Print all the prices of a list of cards
    * @param card - Cards prices to be printed
    */
-  public static void printCards(List<Card> cards) {
+  public void printCards(List<Card> cards) {
     if (cards.size() == 0) {
       System.out.println("No card found.");
       return;
     }
     for (Card c: cards) {
-      System.out.println("Card Content:");
       System.out.println("--------------------------------------");
       System.out.println("Prices of "+c.getName()+" | "+c.getCategory());
       System.out.println("(Card Id: "+c.getCardId()+")");
       System.out.println("--------------------------------------");
       System.out.println("Price\tIn Stock\tIs NM\tFoil\tDate");
       System.out.println("--------------------------------------");
+      Hibernate.initialize(c.getPrices());
       for (Price price: c.getPrices()) {
         System.out.println(price.getAmount() +"\t"+ price.getAmountInStock() +"\t\t"+ price.getCondition() +"\t"+ price.getFoiling() +"\t"+ price.getFetchDate());
       }
       System.out.println("--------------------------------------");
+    }
+  }
+  /**
+   * Delete the content of all repositories
+   */
+  public void clearAllRepositories() {
+    priceRepository.deleteAll();
+    cardRepository.deleteAll();
+  }
+  public void clearPrices() {
+    List<Card> list = (List<Card>) cardRepository.findAll();
+    clearAllRepositories();
+    for (Card c: list) {
+      String cardId = c.getCardId();
+      String name = c.getName();
+      String set = c.getCategory();
+      Card card = new Card();
+      card.setCardId(cardId);
+      card.setCategory(set);
+      card.setName(name);
+      cardRepository.save(card);
     }
   }
 
@@ -151,6 +187,11 @@ public class CardDatabaseController {
     }
 
     return -1;
+  }
+  
+  public void setRepositories(CardRepository cardRepository, PriceRepository priceRepository) {
+    this.cardRepository = cardRepository;
+    this.priceRepository = priceRepository;
   }
 }
 
