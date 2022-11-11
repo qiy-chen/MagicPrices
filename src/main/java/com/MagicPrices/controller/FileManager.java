@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
+import org.apache.commons.io.FilenameUtils;
 import com.MagicPrices.model.CardDatabase;
 import com.MagicPrices.model.FetcherSystem;
 import com.MagicPrices.model.MainMenu;
@@ -80,9 +81,53 @@ public class FileManager {
     }
     return success;
   }
+  /**
+   * Method to read the content of a file from a file path 
+   * @param path - path name of the file
+   * @return - Content of the file as a list of lines
+   */
+  public List<String> readFile(String path) {
+    File file = new File(path);
+    List<String> lines = new ArrayList<String>();
+    Scanner myReader;
+    try {
+      if (file.isDirectory()) throw new FileNotFoundException();
+      myReader = new Scanner(file);
+      while (myReader.hasNextLine()) {
+        String data = myReader.nextLine();
+        lines.add(data);
+      }
+      myReader.close();
+    } catch (FileNotFoundException e) {
+      System.out.println("Error, file at "+file.getAbsolutePath()+" does not exist, is not a file or can't be read.");
+    }
+    return lines;
+  }
+  
+  /**
+   * Method to read the content of a file from a File class
+   * @param file - File object to be read
+   * @return - Content of the file as a list of lines
+   */
+  public List<String> readFile(File file) {
+    List<String> lines = new ArrayList<String>();
+    Scanner myReader;
+    try {
+      if (file.isDirectory()) throw new FileNotFoundException();
+      myReader = new Scanner(file);
+      while (myReader.hasNextLine()) {
+        String data = myReader.nextLine();
+        lines.add(data);
+      }
+      myReader.close();
+    } catch (FileNotFoundException e) {
+      System.out.println("Error, file at "+file.getAbsolutePath()+" does not exist, is not a file or can't be read.");
+    }
+    return lines;
+  }
 
   /**
-   * Recursive method to return a list of File from a directory path
+   * Recursive method to return a list of File from a directory/file path
    * @param path - path name of the directory or file to explore
    * @return - List of File in the directory path
    */
@@ -109,5 +154,11 @@ public class FileManager {
     return listFiles;
 
   }
+  
+  public String getExtensionByApacheCommonLib(String filename) {
+    return FilenameUtils.getExtension(filename);
+}
+
+
 
 }
