@@ -1,6 +1,10 @@
 package com.MagicPrices.controller;
 
+import java.lang.reflect.Array;
+import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.hibernate.Hibernate;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +20,7 @@ public class CardDatabaseController {
   private FetcherSystem system = MainController.getFetcherSystem();
   private MainMenu menu = MainController.getMainMenu();
   private CardDatabase database = MainController.getCardDatabase();
-  
+
   private CardRepository cardRepository;
   private PriceRepository priceRepository;
 
@@ -94,7 +98,7 @@ public class CardDatabaseController {
     Card card = cardRepository.findCardByCardId(cardId);
     return card;
   }
-  
+
   public List<Card> searchRepositoryByName(String cardName) {
     List<Card> list = (List<Card>) cardRepository.findAll();
     List<Card> resultList = new ArrayList<Card>();
@@ -103,8 +107,8 @@ public class CardDatabaseController {
     }
     return resultList;
   }
-  
-  
+
+
 
   /**
    * Print all the prices of a card
@@ -118,7 +122,7 @@ public class CardDatabaseController {
 
   /**
    * Print all the prices of a list of cards
-   * @param card - Cards prices to be printed
+   * @param cards - Cards to be printed
    */
   public void printCards(List<Card> cards) {
     if (cards.size() == 0) {
@@ -129,16 +133,73 @@ public class CardDatabaseController {
       System.out.println("--------------------------------------");
       System.out.println("Prices of "+c.getName()+" | "+c.getCategory());
       System.out.println("(Card Id: "+c.getCardId()+")");
-      System.out.println("--------------------------------------");
-      System.out.println("Price\tIn Stock\tIs NM\tFoil\tDate");
-      System.out.println("--------------------------------------");
-      Hibernate.initialize(c.getPrices());
-      for (Price price: c.getPrices()) {
-        System.out.println(price.getAmount() +"\t"+ price.getAmountInStock() +"\t\t"+ price.getCondition() +"\t"+ price.getFoiling() +"\t"+ price.getFetchDate());
-      }
-      System.out.println("--------------------------------------");
+      printPrices(c.getPrices());
     }
   }
+
+  /**
+   * Give a list of cards of prices within specified time bounds and pricing options of a list of cards 
+   * @param cards - Cards to be printed
+   * @return - a list of cards with filtered prices
+   */
+  public List<Card> filterPrices(List<Card> cards,LocalDateTime oldestTime,LocalDateTime newestTime,List<String> condition,List<String> foiling) {
+    List<Card> filteredCards = new ArrayList<Card>();
+    if (cards.size() == 0) {
+      System.out.println("No card found.");
+      return filteredCards;
+    }
+    if (cards.size() != condition.size() || cards.size()!=foiling.size()) {
+      System.out.println("Wrong lists length.");
+      return filteredCards;
+    }
+    int indexCard = 0;
+    for (Card c: cards) {
+      List<Price> filteredPrice = new ArrayList<Price>();
+      for (Price price: c.getPrices()) {
+        LocalDateTime fetchDate = price.getFetchDate();
+        String conditionPrice = price.getCondition();
+        String foilingPrice = price.getFoiling();
+        //Check time bounds
+        if ((fetchDate.isAfter(oldestTime)|| fetchDate.isEqual(oldestTime)) && (fetchDate.isBefore(newestTime) || fetchDate.isEqual(newestTime))) {
+          //Check condition and foiling status
+          if (conditionPrice.equals(condition.get(indexCard)) && foilingPrice.equals(foiling.get(indexCard))) filteredPrice.add(price);
+        }
+        
+      }
+      c.setCardPrices(filteredPrice);
+      filteredCards.add(c);
+      indexCard++;
+    }
+    return filteredCards;
+  }
+  
+  public void printCardsPricesSpecific(List<Card> cards,LocalDateTime oldestTime,LocalDateTime newestTime,List<String> condition,List<String> foiling) {
+    List<Card> filteredCards = new ArrayList<Card>();
+    filteredCards = filterPrices(cards, oldestTime, newestTime, condition, foiling);
+    printCards(filteredCards);
+  }
+  
+  public void printCardsPricesMostRecent(List<Card> listCards,List<String> condition,List<String> foiling) {
+    List<Card> filteredCards = new ArrayList<Card>();
+    if (listCards.size() != condition.size() || listCards.size()!=foiling.size()) {
+      System.out.println("Wrong lists length.");
+      return;
+    }
+    int cardIndex = 0;
+    for (Card card: listCards) {
+      Card repositoryCard = searchRepositoryById(card.getCardId());
+      if (repositoryCard==null) continue;
+      List<Price> listPrices = repositoryCard.getPrices();
+      LocalDateTime mostRecentDate = LocalDateTime.of(1970, Month.JANUARY, 1, 1, 1, 1);
+      for (Price price: listPrices) {
+        if (price.getFetchDate().isAfter(mostRecentDate)) mostRecentDate = price.getFetchDate();
+      }
+      repositoryCard.setCardPrices(filterPrices(Arrays.asList(card),mostRecentDate,mostRecentDate, Arrays.asList(condition.get(cardIndex)), Arrays.asList(foiling.get(cardIndex))).get(0).getPrices());
+      filteredCards.add(repositoryCard);
+    }
+    printCards(filteredCards);
+  }
+
   /**
    * Delete the content of all repositories
    */
@@ -159,6 +220,24 @@ public class CardDatabaseController {
       card.setName(name);
       cardRepository.save(card);
     }
+  }
+
+  public void clearPricesOfCard(String cardId) {
+    Card card = cardRepository.findCardByCardId(cardId);
+    if (card!=null) {
+      card.setCardPrices(new ArrayList<Price>());
+      cardRepository.save(card);
+    }
+  }
+
+  public void printPrices(List<Price> listPrices) {
+    System.out.println("--------------------------------------");
+    System.out.println("Price\tIn Stock\tIs NM\tFoil\tDate");
+    System.out.println("--------------------------------------");
+    for (Price price: listPrices) {
+      System.out.println(price.getAmount() +"\t"+ price.getAmountInStock() +"\t\t"+ price.getCondition() +"\t"+ price.getFoiling() +"\t"+ price.getFetchDate());
+    }
+    System.out.println("--------------------------------------");
   }
 
   /**
@@ -188,7 +267,7 @@ public class CardDatabaseController {
 
     return -1;
   }
-  
+
   public void setRepositories(CardRepository cardRepository, PriceRepository priceRepository) {
     this.cardRepository = cardRepository;
     this.priceRepository = priceRepository;

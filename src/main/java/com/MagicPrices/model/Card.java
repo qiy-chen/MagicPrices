@@ -339,6 +339,13 @@ public class Card implements java.io.Serializable
    public static  String convertToCardId(WebElement card){
     return card.findElement(By.tagName("a")).getDomAttribute("href").replaceAll("https://www.facetofacegames.com/", "").replaceAll("/","");
   }
+   
+   public boolean setCardPrices(List<Price> prices) {
+     boolean wasSet = false;
+     this.prices = prices;
+     wasSet = true;
+     return wasSet;
+   }
 
 
   public String toString()

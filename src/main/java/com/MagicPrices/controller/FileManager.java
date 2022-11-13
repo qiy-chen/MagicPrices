@@ -52,6 +52,31 @@ public class FileManager {
     }
     return success;
   }
+  
+  /**
+   * Method to save a list of String as a file. The namefile is fixed by the given path
+   * @param userList - List of String to be saved as a file
+   * @param path - file's fixed path
+   * @return - true if success, false if there is an error
+   */
+  public boolean saveFile(List<String> userList, String path){
+    boolean success = false;
+    List<String> lines = new ArrayList<String>(userList);
+    new File(path).mkdirs();
+    String date = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS).toString().replaceAll(":", "-");
+    Path file = Paths.get(path);
+    try {
+      Files.write(file, lines, StandardCharsets.UTF_8);
+      System.out.println("File saved to "+path);
+      success = true;
+    } catch (IOException e) {
+      System.out.println("There was an error when saving the file");
+      e.printStackTrace();
+      success = false;
+      return success;
+    }
+    return success;
+  }
 
   /**
    * Method to print the content of every file that exists from a directory/file path
