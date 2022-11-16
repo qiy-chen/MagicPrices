@@ -148,6 +148,9 @@ public class FetcherController {
       return;
     }
     for (String cardId: listOfCardId) {
+      List<String> splitId = MainController.splitCardId(cardId, "NM", "Non-Foil");
+      //Get card Id without card's condition and foiling
+      cardId = splitId.get(0);
       String cardName = cardId.replaceAll("-", " ");
       int pagenb = 1;
       boolean success = false;

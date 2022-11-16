@@ -13,9 +13,12 @@ import com.MagicPrices.model.MainMenu;
 import com.MagicPrices.model.Price;
 import com.MagicPrices.repository.CardRepository;
 import com.MagicPrices.repository.PriceRepository;
+import io.github.bonigarcia.wdm.WebDriverManager;
 import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.safari.SafariDriver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -261,9 +264,9 @@ public class MainController implements CommandLineRunner{
                   foiling = separated[1];
                   success = true;
                 }
-                 catch(Exception e) {
-                   System.out.println("Some inputs are empty.");
-                 }
+                catch(Exception e) {
+                  System.out.println("Some inputs are empty.");
+                }
               }
             }
             setStartTime();
@@ -278,7 +281,7 @@ public class MainController implements CommandLineRunner{
               List<String> conditionList= new ArrayList<String>();
               List<String> foilingList = new ArrayList<String>();
               for (String cardIdRaw:listId) {
-                
+
                 List<String> separatedId = splitCardId(cardIdRaw,condition,foiling);
                 //System.out.println(separatedId.get(0));
                 Card card = cardDatabaseController.searchRepositoryById(separatedId.get(0));
@@ -318,7 +321,7 @@ public class MainController implements CommandLineRunner{
                   month = Integer.parseInt(separatedDateParameters[1]);
                   day = Integer.parseInt(separatedDateParameters[2]);
                   oldestDate = LocalDateTime.of(year, month, day, 0, 0, 0);
-                  
+
                   separatedDateParameters = newestDateRaw.split("/");
                   year = Integer.parseInt(separatedDateParameters[0]);
                   month = Integer.parseInt(separatedDateParameters[1]);
@@ -342,9 +345,9 @@ public class MainController implements CommandLineRunner{
                   foiling = separated[1];
                   successPricing = true;
                 }
-                 catch(Exception e) {
-                   System.out.println("Some inputs are empty.");
-                 }
+                catch(Exception e) {
+                  System.out.println("Some inputs are empty.");
+                }
               }
             }
             setStartTime();
@@ -361,7 +364,7 @@ public class MainController implements CommandLineRunner{
               List<String> foilingList = new ArrayList<String>();
               for (String cardIdRaw:listId) {
                 List<String> separatedId = splitCardId(cardIdRaw,condition,foiling);
-                
+
                 Card card = cardDatabaseController.searchRepositoryById(separatedId.get(0));
                 if (card!=null) {
                   listCard.add(card);
@@ -391,9 +394,9 @@ public class MainController implements CommandLineRunner{
                   foiling = separated[1];
                   success = true;
                 }
-                 catch(Exception e) {
-                   System.out.println("Some inputs are empty.");
-                 }
+                catch(Exception e) {
+                  System.out.println("Some inputs are empty.");
+                }
               }
             }
             setStartTime();
@@ -408,7 +411,7 @@ public class MainController implements CommandLineRunner{
               List<String> conditionList= new ArrayList<String>();
               List<String> foilingList = new ArrayList<String>();
               for (String cardIdRaw:listId) {
-                
+
                 List<String> separatedId = splitCardId(cardIdRaw,condition,foiling);
                 //System.out.println(separatedId.get(0));
                 Card card = cardDatabaseController.searchRepositoryById(separatedId.get(0));
@@ -420,7 +423,7 @@ public class MainController implements CommandLineRunner{
               }
 
               List<Card> listCards = cardDatabaseController.getCardsPricesMostRecent(listCard, conditionList, foilingList);
-              
+
               List<String> listCardsAppendedPrice = new ArrayList<String>();
               listCardsAppendedPrice.add("Generated at "+LocalDateTime.now());
               double totalPrice = 0;
@@ -547,11 +550,22 @@ public class MainController implements CommandLineRunner{
   public static WebDriver getWebDriver() {
     if (driver == null) {
       try {
-        driver = new SafariDriver();
+        driver = WebDriverManager.chromedriver().create();
       }
       catch (Exception e){
-        System.out.println("Error when starting up web driver. Please check the error below.\nError message:");
-        System.out.println(e);
+        try {
+          driver = WebDriverManager.safaridriver().create();
+          
+        }
+        catch (Exception e1){
+          try {
+            driver = WebDriverManager.firefoxdriver().create();
+          }
+          catch (Exception e2){
+            System.out.println("Error when starting up web driver. Please check the error below.\nError message:");
+            System.out.println(e2);
+          }
+        }
       }
     }
     return driver;
@@ -566,7 +580,7 @@ public class MainController implements CommandLineRunner{
     long totalTime = endTime - startTime;
     System.out.println("Operation "+ message +" took "+totalTime*0.000000001+" s");
   }
-  
+
   /**
    * Convert the raw id stored in .idlist files into a list of size 3, cardId at index 0, condition at index 1 and foiling at index 2
    * @param cardIdRaw - id found in a .idlist file
