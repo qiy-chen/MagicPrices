@@ -10,6 +10,7 @@ import com.MagicPrices.model.Card;
 import com.MagicPrices.model.CardDatabase;
 import com.MagicPrices.model.FetcherSystem;
 import com.MagicPrices.model.MainMenu;
+import com.MagicPrices.model.Price;
 import com.MagicPrices.repository.CardRepository;
 import com.MagicPrices.repository.PriceRepository;
 import org.apache.commons.lang3.StringUtils;
@@ -279,7 +280,7 @@ public class MainController implements CommandLineRunner{
               for (String cardIdRaw:listId) {
                 
                 List<String> separatedId = splitCardId(cardIdRaw,condition,foiling);
-                System.out.println(separatedId.get(0));
+                //System.out.println(separatedId.get(0));
                 Card card = cardDatabaseController.searchRepositoryById(separatedId.get(0));
                 if (card!=null) {
                   listCard.add(card);
@@ -288,7 +289,8 @@ public class MainController implements CommandLineRunner{
                 }
               }
 
-              cardDatabaseController.printCardsPricesMostRecent(listCard, conditionList, foilingList);
+              List<Card> listCards = cardDatabaseController.getCardsPricesMostRecent(listCard, conditionList, foilingList);
+              cardDatabaseController.printCards(listCards);
             }
             setEndTime(command2);
           }
@@ -368,7 +370,75 @@ public class MainController implements CommandLineRunner{
                 }
               }
 
-              cardDatabaseController.printCardsPricesSpecific(listCard, oldestDate, newestDate,conditionList, foilingList);
+              List<Card> listCards = cardDatabaseController.getCardsPricesSpecific(listCard, oldestDate, newestDate,conditionList, foilingList);
+              cardDatabaseController.printCards(listCards);
+            }
+            setEndTime(command2);
+          }
+          else if (command2.equals("outputrecentprices")||command2.equals("orp")) {
+            boolean success = false;
+            String condition = "";
+            String foiling = "";
+            while (!success) {
+              System.out.println("Please input your default pricing options as this format: [condition],[foiling]");
+              String input = inputReader.nextLine().trim();
+              if (input.equals("\\return")|input.equals("\\r")) break;
+              if (StringUtils.countMatches(input, ",")!=1) System.out.println("Wrong input.");
+              else {
+                try {
+                  String[] separated = input.split(",");
+                  condition = separated[0];
+                  foiling = separated[1];
+                  success = true;
+                }
+                 catch(Exception e) {
+                   System.out.println("Some inputs are empty.");
+                 }
+              }
+            }
+            setStartTime();
+            for (File file:loadedFiles) {
+              if (!fileManager.getExtensionByApacheCommonLib(file.getAbsolutePath()).equals(IDLISTFILEXTENSION.replaceFirst(".", ""))){
+                System.out.println("Wrong file extension for "+file.getAbsolutePath());
+                continue;
+              }
+              //Convert list of cardIds into Cards found in the repository
+              List<String> listId = fileManager.readFile(file);
+              List<Card> listCard = new ArrayList<Card>();
+              List<String> conditionList= new ArrayList<String>();
+              List<String> foilingList = new ArrayList<String>();
+              for (String cardIdRaw:listId) {
+                
+                List<String> separatedId = splitCardId(cardIdRaw,condition,foiling);
+                //System.out.println(separatedId.get(0));
+                Card card = cardDatabaseController.searchRepositoryById(separatedId.get(0));
+                if (card!=null) {
+                  listCard.add(card);
+                  conditionList.add(separatedId.get(1));
+                  foilingList.add(separatedId.get(2));
+                }
+              }
+
+              List<Card> listCards = cardDatabaseController.getCardsPricesMostRecent(listCard, conditionList, foilingList);
+              
+              List<String> listCardsAppendedPrice = new ArrayList<String>();
+              listCardsAppendedPrice.add("Generated at "+LocalDateTime.now());
+              double totalPrice = 0;
+              int nbCards = listCards.size();
+              for (Card c: listCards) {
+                Price cardPrice = c.getPrice(0);
+                String nameAndSet = c.getName()+"|"+c.getCategory();
+                int nbTabs = 7-(nameAndSet.length())/8;
+                //Prevent negative number of tabs
+                if (nbTabs<0) nbTabs = 0;
+                String tabs = new String(new char[nbTabs]).replace("\0", "\t");
+                listCardsAppendedPrice.add(nameAndSet+tabs+"Price: "+cardPrice.getAmount()+"\t\t"+"Stock: "+cardPrice.getAmountInStock()+"\t"+cardPrice.getCondition()+"|"+cardPrice.getFoiling());
+                totalPrice+=c.getPrice(0).getAmount();
+              }
+              totalPrice = Math.round(totalPrice * 100);
+              totalPrice = totalPrice/100;
+              listCardsAppendedPrice.add("Total :"+totalPrice+"CAD"+"\tFor "+nbCards+" cards");
+              fileManager.saveFile(listCardsAppendedPrice, filePath, ".txt");
             }
             setEndTime(command2);
           }

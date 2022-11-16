@@ -173,17 +173,17 @@ public class CardDatabaseController {
     return filteredCards;
   }
   
-  public void printCardsPricesSpecific(List<Card> cards,LocalDateTime oldestTime,LocalDateTime newestTime,List<String> condition,List<String> foiling) {
+  public List<Card> getCardsPricesSpecific(List<Card> cards,LocalDateTime oldestTime,LocalDateTime newestTime,List<String> condition,List<String> foiling) {
     List<Card> filteredCards = new ArrayList<Card>();
     filteredCards = filterPrices(cards, oldestTime, newestTime, condition, foiling);
-    printCards(filteredCards);
+    return filteredCards;
   }
   
-  public void printCardsPricesMostRecent(List<Card> listCards,List<String> condition,List<String> foiling) {
+  public List<Card> getCardsPricesMostRecent(List<Card> listCards,List<String> condition,List<String> foiling) {
     List<Card> filteredCards = new ArrayList<Card>();
     if (listCards.size() != condition.size() || listCards.size()!=foiling.size()) {
       System.out.println("Wrong lists length.");
-      return;
+      return filteredCards;
     }
     int cardIndex = 0;
     for (Card card: listCards) {
@@ -196,8 +196,9 @@ public class CardDatabaseController {
       }
       repositoryCard.setCardPrices(filterPrices(Arrays.asList(card),mostRecentDate,mostRecentDate, Arrays.asList(condition.get(cardIndex)), Arrays.asList(foiling.get(cardIndex))).get(0).getPrices());
       filteredCards.add(repositoryCard);
+      cardIndex++;
     }
-    printCards(filteredCards);
+    return filteredCards;
   }
 
   /**
