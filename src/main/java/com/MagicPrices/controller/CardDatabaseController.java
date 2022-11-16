@@ -130,7 +130,7 @@ public class CardDatabaseController {
       return;
     }
     for (Card c: cards) {
-      System.out.println("--------------------------------------");
+      printSeparator();
       System.out.println("Prices of "+c.getName()+" | "+c.getCategory());
       System.out.println("(Card Id: "+c.getCardId()+")");
       printPrices(c.getPrices());
@@ -232,13 +232,17 @@ public class CardDatabaseController {
   }
 
   public void printPrices(List<Price> listPrices) {
-    System.out.println("--------------------------------------");
-    System.out.println("Price\tIn Stock\tIs NM\tFoil\tDate");
-    System.out.println("--------------------------------------");
+    printSeparator();
+    System.out.println("Price\tIn Stock\tIs NM\tFoil\t\tDate");
+    printSeparator();
     for (Price price: listPrices) {
-      System.out.println(price.getAmount() +"\t"+ price.getAmountInStock() +"\t\t"+ price.getCondition() +"\t"+ price.getFoiling() +"\t"+ price.getFetchDate());
+      int nbTabs = 3-(price.getFoiling().length())/4;
+      //Prevent negative number of tabs
+      if (nbTabs<0) nbTabs = 0;
+      String tabs = new String(new char[nbTabs]).replace("\0", "\t");
+      System.out.println(price.getAmount() +"\t"+ price.getAmountInStock() +"\t\t"+ price.getCondition() +"\t"+ price.getFoiling() +tabs+ price.getFetchDate());
     }
-    System.out.println("--------------------------------------");
+    printSeparator();
   }
 
   /**
@@ -267,6 +271,10 @@ public class CardDatabaseController {
     }
 
     return -1;
+  }
+  
+  private void printSeparator(){
+    System.out.println("----------------------------------------------------------------------------");
   }
 
   public void setRepositories(CardRepository cardRepository, PriceRepository priceRepository) {

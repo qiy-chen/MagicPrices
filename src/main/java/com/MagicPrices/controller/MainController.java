@@ -43,16 +43,22 @@ public class MainController implements CommandLineRunner{
   @Override
   public void run(String... args) throws Exception {
 
+    //System and webdriver initialization
     system = new FetcherSystem();
     system.setMainMenu(MainController.getMainMenu());
     MainController.getWebDriver();
-
+    
+    //Scanner initialization, args[0] determine the input stream for the scanner
     Scanner inputReader = new Scanner(System.in);
+    
+    //Controllers initialization
     FetcherController fetcherController = new FetcherController();
     fetcherController.setRepositories(cardRepository, priceRepository);
     CardDatabaseController cardDatabaseController = new CardDatabaseController();
     cardDatabaseController.setRepositories(cardRepository, priceRepository);
     FileManager fileManager = new FileManager();
+    
+    
     String command = "";
     //Intro
     System.out.println("Welcome.\nPlease input your command.");
@@ -460,6 +466,7 @@ public class MainController implements CommandLineRunner{
                 successPricing = true;
               }
             }
+            setStartTime();
             for (File file: loadedFiles) {
               //Do not proceed if not correct extension
               if (!fileManager.getExtensionByApacheCommonLib(file.getAbsolutePath()).equals(IDLISTFILEXTENSION.replaceFirst(".", ""))){
@@ -480,6 +487,28 @@ public class MainController implements CommandLineRunner{
               fileManager.saveFile(newLines, path);
             }
             System.out.println("Successfully added the default condition and foiling status at the end of each ids.");
+            setEndTime(command2);
+          }
+          else if (command2.equals("convertfiles")||command2.equals("cf")) {
+            setStartTime();
+            List<String> listCardIds = new ArrayList<String>();
+            for (File file: loadedFiles) {
+              System.out.println("Attempting to convert "+file.getAbsolutePath());
+              List<String> listCardNames = fileManager.readFile(file);
+              for (String cardName: listCardNames) {
+                
+                //Remove all special characters
+                cardName = cardName.replaceAll("[^a-zA-Z0-9]", " ");
+                String url = FetcherController.generateURL(cardName, false, false, false, true, 1);
+                List<WebElement> listCards = fetcherController.printPageFromURL(url, driver);
+                //Skip if no card found
+                if (listCards.size()<1) continue;
+                //Pick the first choice
+                listCardIds.add(Card.convertToCardId(listCards.get(0)));
+              }
+            }
+            if (listCardIds.size()>0) fileManager.saveFile(listCardIds,filePath,IDLISTFILEXTENSION);
+            setEndTime(command2);
           }
         }
       }
@@ -554,11 +583,13 @@ public class MainController implements CommandLineRunner{
       }
       catch (Exception e){
         try {
-          driver = WebDriverManager.safaridriver().create();
-          
+         
+          driver = new SafariDriver();
         }
         catch (Exception e1){
           try {
+            
+            
             driver = WebDriverManager.firefoxdriver().create();
           }
           catch (Exception e2){
