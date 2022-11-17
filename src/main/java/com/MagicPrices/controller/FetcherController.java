@@ -74,6 +74,8 @@ public class FetcherController {
       return;
     }
     for (String cardName: cardNameList) {
+      //If string is empty, skip the search
+      if (cardName.trim().equals("")) continue;
       System.out.println("Fetching now "+cardName);
       int pagenb = 1;
       boolean success = true;
@@ -147,6 +149,8 @@ public class FetcherController {
       return;
     }
     for (String cardId: listOfCardId) {
+      //If string is empty, skip the search
+      if (cardId.trim().equals("")) continue;
       List<String> splitId = MainController.splitCardId(cardId, "NM", "Non-Foil");
       //Get card Id without card's condition and foiling
       cardId = splitId.get(0);
@@ -229,6 +233,7 @@ public class FetcherController {
       return null;
     }
     Fetcher fetcher = new Fetcher(currentTime,url,conversionRateUSDToCAD,menu,system, database);
+    
     List<WebElement> listOfCards = fetcher.discoverPage(url, driver);
     System.out.println("Card(s) at "+url);
     CardDatabaseController.printSeparator();
@@ -248,16 +253,6 @@ public class FetcherController {
     return listOfCards;
   }
   
-  public boolean noResult(String url, WebDriver driver) {
-    if (driver == null) {
-      System.out.println("Error, no web driver was started, please enter 'rd' to attempt to open a new web driver.");
-      return true;
-    }
-    Fetcher fetcherDummy = new Fetcher(currentTime,url,conversionRateUSDToCAD,menu,system, database);
-    boolean noResult = fetcherDummy.noResult(driver);
-    fetcherDummy.delete();
-    return noResult;
-  }
 
   /**
    * Generate a url link based on given parameters

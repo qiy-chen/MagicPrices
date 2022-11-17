@@ -363,8 +363,8 @@ public class Fetcher
   public boolean noResult(WebDriver driver) {
     if (!driver.getCurrentUrl().equals(url)) driver.get(url);
     WebDriverWait driverWait = new WebDriverWait(driver, Duration.ofSeconds(10));
-    WebElement results = driverWait.until(ExpectedConditions.presenceOfElementLocated(By.className("hawk-results")));
-    return (results.getText().trim().equals("No Results"));
+    WebElement results = driverWait.until(ExpectedConditions.presenceOfElementLocated(By.className("hawk__results-title")));
+    return (results.getText().trim().contains("0 search results for"));
   }
 
 

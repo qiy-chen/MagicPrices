@@ -499,12 +499,15 @@ public class MainController implements CommandLineRunner{
                 
                 //Remove all special characters
                 cardName = cardName.replaceAll("[^a-zA-Z0-9]", " ");
-                String url = FetcherController.generateURL(cardName, false, false, false, true, 1);
-                //Skip if no card found
-                if (fetcherController.noResult(url,driver)) continue;
                 
+                String url = FetcherController.generateURL(cardName, false, false, false, true, 1);
+
+                //If string is empty, skip the search
+                if (cardName.trim().equals("")) continue;
                 List<WebElement> listCards = fetcherController.printPageFromURL(url, driver);
                 
+                //Skip if no card found
+                if (listCards.size()<1) continue;
                 //Pick the first choice
                 listCardIds.add(Card.convertToCardId(listCards.get(0)));
               }
@@ -581,19 +584,21 @@ public class MainController implements CommandLineRunner{
   public static WebDriver getWebDriver() {
     if (driver == null) {
       try {
-        driver = WebDriverManager.chromedriver().create();
+        WebDriverManager.chromedriver().setup();
+        driver = new ChromeDriver();
       }
       catch (Exception e){
         try {
           System.out.println(e);
           System.out.println("Attempting to create another type of driver.");
-          driver = WebDriverManager.safaridriver().create();
+          driver = new SafariDriver();
         }
         catch (Exception e1){
           try {
             System.out.println(e1);
             System.out.println("Attempting to create another type of driver.");
-            driver = WebDriverManager.firefoxdriver().create();
+            WebDriverManager.firefoxdriver().setup();
+            driver = new FirefoxDriver();
           }
           catch (Exception e2){
             System.out.println("Error when starting up web driver. Please check the error below.\nError message:");
