@@ -273,7 +273,7 @@ public class CardDatabaseController {
     return -1;
   }
   
-  private void printSeparator(){
+  public static void printSeparator(){
     System.out.println("----------------------------------------------------------------------------");
   }
 

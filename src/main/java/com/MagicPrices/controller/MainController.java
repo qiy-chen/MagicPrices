@@ -500,9 +500,11 @@ public class MainController implements CommandLineRunner{
                 //Remove all special characters
                 cardName = cardName.replaceAll("[^a-zA-Z0-9]", " ");
                 String url = FetcherController.generateURL(cardName, false, false, false, true, 1);
-                List<WebElement> listCards = fetcherController.printPageFromURL(url, driver);
                 //Skip if no card found
-                if (listCards.size()<1) continue;
+                if (fetcherController.noResult(url,driver)) continue;
+                
+                List<WebElement> listCards = fetcherController.printPageFromURL(url, driver);
+                
                 //Pick the first choice
                 listCardIds.add(Card.convertToCardId(listCards.get(0)));
               }
@@ -583,13 +585,14 @@ public class MainController implements CommandLineRunner{
       }
       catch (Exception e){
         try {
-         
-          driver = new SafariDriver();
+          System.out.println(e);
+          System.out.println("Attempting to create another type of driver.");
+          driver = WebDriverManager.safaridriver().create();
         }
         catch (Exception e1){
           try {
-            
-            
+            System.out.println(e1);
+            System.out.println("Attempting to create another type of driver.");
             driver = WebDriverManager.firefoxdriver().create();
           }
           catch (Exception e2){

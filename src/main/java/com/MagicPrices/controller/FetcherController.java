@@ -20,8 +20,7 @@ import java.util.List;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.WebDriverWait;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.MagicPrices.controller.CardDatabaseController;
 
 public class FetcherController {
 
@@ -58,7 +57,7 @@ public class FetcherController {
     preferedFoilCondition = aPreferedFoilCondition;
     fastMode = aFastMode;
     looseSearch = alooseSearch;
-    System.out.println("------------------------------------------");
+    CardDatabaseController.printSeparator();
 
     if (driver == null) {
       System.out.println("Error, no web driver was started, please enter 'rd' to attempt to open a new web driver.");
@@ -232,7 +231,7 @@ public class FetcherController {
     Fetcher fetcher = new Fetcher(currentTime,url,conversionRateUSDToCAD,menu,system, database);
     List<WebElement> listOfCards = fetcher.discoverPage(url, driver);
     System.out.println("Card(s) at "+url);
-    System.out.println("--------------------------------------");
+    CardDatabaseController.printSeparator();
     //Print name, set and id (url)
     int cardNumber = 0;
     for (WebElement card: listOfCards) {
@@ -242,11 +241,22 @@ public class FetcherController {
       String cardSet = cardSetHTML.getText().trim();
       String cardId=Card.convertToCardId(card);
       System.out.println("["+ cardNumber++ +"] Name: "+cardName+" | Set: "+cardSet+"\nCard Id: "+cardId);
-      System.out.println("--------------------------------------");
+      CardDatabaseController.printSeparator();
     }
-    System.out.println("--------------------------------------");
+    CardDatabaseController.printSeparator();
     fetcher.delete();
     return listOfCards;
+  }
+  
+  public boolean noResult(String url, WebDriver driver) {
+    if (driver == null) {
+      System.out.println("Error, no web driver was started, please enter 'rd' to attempt to open a new web driver.");
+      return true;
+    }
+    Fetcher fetcherDummy = new Fetcher(currentTime,url,conversionRateUSDToCAD,menu,system, database);
+    boolean noResult = fetcherDummy.noResult(driver);
+    fetcherDummy.delete();
+    return noResult;
   }
 
   /**
