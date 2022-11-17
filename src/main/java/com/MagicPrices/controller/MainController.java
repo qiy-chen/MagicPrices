@@ -170,7 +170,7 @@ public class MainController implements CommandLineRunner{
         List<File> loadedFiles = new ArrayList<File>();
 
         while(inputReader.hasNext()) {
-          System.out.println("Pleaser enter your command.");
+          System.out.println("Pleaser enter your command. Enter \\return or \\r to go to the main menu. Press 'help' or 'h' to print all available commands.");
           String command2 = inputReader.nextLine();
           //Exit file manager menu
           if (command2.equals("\\return")|command2.equals("\\r")) break;
@@ -550,9 +550,14 @@ public class MainController implements CommandLineRunner{
     System.out.println("All file manager commands: \n"
         + "Command\t\t\tAbrievated\tUsage\n"
         + "createnewlist\t\tcnl\tCreate a list of cards from scratch.\n"
-        + "loadfrompath\tlfp\tRead all the files present in the input path (including files in subdirectories).\n"
+        + "loadfrompath\t\tlfp\tRead all the files present in the input path (including files in subdirectories).\n"
         + "printfile\t\tpf\tPrint the content of every file from a path.\n"
         + "trackfile\t\ttf\tAdd to the repository the most recent prices from a list of cards.\n"
+        + "printrecentprices\tprp\tPrint the most recent prices listed by .idlist files\n"
+        + "printspecificprices\tpsp\tPrint all the prices listed by .idlist files that falls between two periods of time.\n"
+        + "outputrecentprices\torp\tCreate a text file containing informations on the most recent prices listed by .idlist files.\n"
+        + "addstatusfiles\t\tasf\tAppend at the end of each .idlist files the selected condition and foiling status of the card if not present previously.\n"
+        + "convertfile\t\tcf\tAttempt to convert each file into a .idlist file.\n"
         + "help\t\t\th\tPrint all the commands available in the file manager menu.\n"
         + "\\return\t\t\t\\r\tGo to main menu."
         + "");
