@@ -48,7 +48,6 @@ public class MainController implements CommandLineRunner{
     system.setMainMenu(MainController.getMainMenu());
     MainController.getWebDriver();
     
-    //Scanner initialization, args[0] determine the input stream for the scanner
     Scanner inputReader = new Scanner(System.in);
     
     //Controllers initialization
@@ -525,7 +524,7 @@ public class MainController implements CommandLineRunner{
   }
 
   /**
-   * Print all available user commands.
+   * List of commands for the main menu
    */
   private void printHelp() {
     System.out.println("All commands: \n"
@@ -546,6 +545,9 @@ public class MainController implements CommandLineRunner{
         + "\\return\t\t\t\\r\tGo to previous menu.\n"
         + "quit\t\t\tq\tClose the program.");
   }
+  /**
+   * List of commands for the file manager menu
+   */
   private void printHelpFileManager() {
     System.out.println("All file manager commands: \n"
         + "Command\t\t\tAbrievated\tUsage\n"
@@ -562,6 +564,10 @@ public class MainController implements CommandLineRunner{
         + "\\return\t\t\t\\r\tGo to main menu."
         + "");
   }
+  /**
+   * Get the fetcherSystem, create one if it doesn't exists yet
+   * @return The FetcherSystem instance
+   */
   public static FetcherSystem getFetcherSystem() {
     if (system == null) {
       system = new FetcherSystem();
@@ -569,7 +575,10 @@ public class MainController implements CommandLineRunner{
     }
     return system;
   }
-
+  /**
+   * Get the mainMenu, create one if it doesn't exists yet
+   * @return The MainMenu instance
+   */
   public static MainMenu getMainMenu() {
     if (menu == null) {
       menu = new MainMenu(MainController.getFetcherSystem(), MainController.getCardDatabase());
@@ -578,6 +587,10 @@ public class MainController implements CommandLineRunner{
     return menu;
   }
 
+  /**
+   * Get the cardDatabaseController, create one if it doesn't exists yet
+   * @return The CardDatabaseController instance
+   */
   public static CardDatabase getCardDatabase() {
     if (database == null) {
       database = new CardDatabase(MainController.getFetcherSystem());
@@ -586,32 +599,37 @@ public class MainController implements CommandLineRunner{
     return database;
   }
 
+  /**
+   * Try to get an instance of a WebDriver
+   * @return An instance of WebDriver if possible
+   */
   public static WebDriver getWebDriver() {
-    if (driver == null) {
-      try {
-        WebDriverManager.chromedriver().setup();
-        driver = new ChromeDriver();
-      }
-      catch (Exception e){
-        try {
-          System.out.println(e);
-          System.out.println("Attempting to create another type of driver.");
-          driver = new SafariDriver();
-        }
-        catch (Exception e1){
+//    if (driver == null) {
+//      try {
+//        WebDriverManager.chromedriver().setup();
+//        driver = new ChromeDriver();
+//      }
+//      catch (Exception e){
+//        try {
+//          System.out.println(e);
+//          System.out.println("Attempting to create another type of driver.");
+//          WebDriverManager.firefoxdriver().setup();
+//          driver = new FirefoxDriver();
+//          
+//        }
+//        catch (Exception e1){
           try {
-            System.out.println(e1);
-            System.out.println("Attempting to create another type of driver.");
-            WebDriverManager.firefoxdriver().setup();
-            driver = new FirefoxDriver();
+            //System.out.println(e1);
+            //System.out.println("Attempting to create another type of driver.");
+            driver = new SafariDriver();
           }
           catch (Exception e2){
             System.out.println("Error when starting up web driver. Please check the error below.\nError message:");
             System.out.println(e2);
           }
-        }
-      }
-    }
+//        }
+//      }
+//    }
     return driver;
   }
 
