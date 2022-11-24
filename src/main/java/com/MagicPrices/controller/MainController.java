@@ -17,7 +17,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.safari.SafariDriver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -610,14 +612,18 @@ public class MainController implements CommandLineRunner{
     if (driver == null) {
       try {
         WebDriverManager.chromedriver().setup();
-        driver = new ChromeDriver();
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--headless");
+        driver = new ChromeDriver(options);
       }
       catch (Exception e){
         try {
           System.out.println(e);
           System.out.println("Attempting to create another type of driver.");
           WebDriverManager.firefoxdriver().setup();
-          driver = new FirefoxDriver();
+          FirefoxOptions options = new FirefoxOptions();
+          options.addArguments("--headless");
+          driver = new FirefoxDriver(options);
           
         }
         catch (Exception e1){
