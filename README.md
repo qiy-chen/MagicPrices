@@ -36,7 +36,7 @@ You can exit psql by typing this command:
 
 ## Starting the application
 
-If downloaded directly from the GitHub repository, the application can be run by typing this command directing from the project's folder:
+If downloaded directly from the GitHub repository, the application can be run by typing this command from the project's folder:
 
 ./gradlew bootRun
 
