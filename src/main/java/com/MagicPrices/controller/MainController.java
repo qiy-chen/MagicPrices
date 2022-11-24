@@ -2,7 +2,6 @@ package com.MagicPrices.controller;
 
 import java.io.File;
 import java.time.LocalDateTime;
-import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -88,7 +87,11 @@ public class MainController implements CommandLineRunner{
         fetcherController.fetchCardByCardId(input, driver);
         setEndTime(command);
       }
-      else if (command.equals("quit")||command.equals("q")) break;
+      else if (command.equals("quit")||command.equals("q")) {
+        //Close the WebDriver instance and close the program
+        if (driver!=null) driver.close();
+        break;
+      }
       //else if (command.equals("sortdatabase")||command.equals("sd")) CardDatabaseController.rebuilDatabase(database);
       else if (command.equals("printrepository")||command.equals("pr")) cardDatabaseController.printRepository();
       else if (command.equals("searchbyid")||command.equals("sbid")) {
@@ -520,7 +523,6 @@ public class MainController implements CommandLineRunner{
 
       System.out.println("Welcome.\nPlease input your command");
     }
-    if (driver!=null) driver.close();
   }
 
   /**
@@ -605,32 +607,32 @@ public class MainController implements CommandLineRunner{
    * @return An instance of WebDriver if possible
    */
   public static WebDriver getWebDriver() {
-//    if (driver == null) {
-//      try {
-//        WebDriverManager.chromedriver().setup();
-//        driver = new ChromeDriver();
-//      }
-//      catch (Exception e){
-//        try {
-//          System.out.println(e);
-//          System.out.println("Attempting to create another type of driver.");
-//          WebDriverManager.firefoxdriver().setup();
-//          driver = new FirefoxDriver();
-//          
-//        }
-//        catch (Exception e1){
+    if (driver == null) {
+      try {
+        WebDriverManager.chromedriver().setup();
+        driver = new ChromeDriver();
+      }
+      catch (Exception e){
+        try {
+          System.out.println(e);
+          System.out.println("Attempting to create another type of driver.");
+          WebDriverManager.firefoxdriver().setup();
+          driver = new FirefoxDriver();
+          
+        }
+        catch (Exception e1){
           try {
-            //System.out.println(e1);
-            //System.out.println("Attempting to create another type of driver.");
+            System.out.println(e1);
+            System.out.println("Attempting to create another type of driver.");
             driver = new SafariDriver();
           }
           catch (Exception e2){
             System.out.println("Error when starting up web driver. Please check the error below.\nError message:");
             System.out.println(e2);
           }
-//        }
-//      }
-//    }
+        }
+      }
+    }
     return driver;
   }
 
