@@ -301,7 +301,7 @@ public class Fetcher
       success = saveCards(ListOfCards); 
     }
     catch (Exception e) {
-      System.out.println("Error: "+e);
+      e.printStackTrace();
       success = false;
     }
     return success;
@@ -352,7 +352,8 @@ public class Fetcher
     List<WebElement> listOfCards = new ArrayList<WebElement>();
     if (noResult(driver)) return listOfCards;
     WebDriverWait driverWait = new WebDriverWait(driver, Duration.ofSeconds(10));
-    listOfCards = driverWait.until(ExpectedConditions.presenceOfElementLocated(By.className("retailPrice"))).findElements(By.xpath("//div[@class='hawk-results__item']"));
+    listOfCards = driverWait.until(ExpectedConditions.presenceOfElementLocated(By.className("hawkPrice"))).findElements(By.xpath("//div[@class='hawk-results__item']"));
+    //System.out.println(driver.getPageSource());
     return listOfCards;
   }
   /**
@@ -365,10 +366,11 @@ public class Fetcher
     WebDriverWait driverWait = new WebDriverWait(driver, Duration.ofSeconds(10));
     //Check if text box shows 'No Results'
     WebElement results = driverWait.until(ExpectedConditions.presenceOfElementLocated(By.className("hawk-results")));
-    boolean noResult = (results.getText().trim().contains("No Results"));
+    System.out.println(results.getText());
+    boolean noResult = (results.getAttribute("innerText").trim().contains("No Results"));
     //Check if text box shows '0 search results for XXX'
     WebElement resultsNb = driverWait.until(ExpectedConditions.presenceOfElementLocated(By.className("hawk__results-title")));
-    boolean resultNb = (resultsNb.getText().trim().contains("0 search results for"));
+    boolean resultNb = (resultsNb.getAttribute("innerText").trim().contains("0 search results for"));
     //If one of those elements appear, send true that the current page contains no result
     return noResult||resultNb;
   }
@@ -385,7 +387,7 @@ public class Fetcher
     String condition = fillerText;
     String foiling = fillerText;
     int amountInStock = Integer.parseInt(card.findElement(By.className("hawkStock")).getDomAttribute("data-stock-num"));
-    double amount = Double.parseDouble(card.findElement(By.className("retailPrice")).getText().replaceAll(java.util.regex.Matcher.quoteReplacement("CAD $"), "").replaceAll(",", ""));
+    double amount = Double.parseDouble(card.findElement(By.className("retailPrice")).getAttribute("innerText").replaceAll(java.util.regex.Matcher.quoteReplacement("CAD $"), "").replaceAll(",", ""));
     //existingCard.addPrice(price, concurrentPrice, condition, amountInStock, foiling, fetchDate, fetcherSystem);
     Price price = new Price();
     price.setAmount(amount);
@@ -420,9 +422,9 @@ public class Fetcher
       String foiling;
       int amountInStock = 0;
       WebElement cardNameHTML = card.findElement(By.className("hawk-results__hawk-contentTitle"));
-      cardName = cardNameHTML.getText().trim();
+      cardName = cardNameHTML.getAttribute("innerText").trim();
       WebElement cardSetHTML = card.findElement(By.className("hawk-results__hawk-contentSubtitle"));
-      cardSet = cardSetHTML.getText().trim();
+      cardSet = cardSetHTML.getAttribute("innerText").trim();
 
       cardId = Card.convertToCardId(card);
       //Card existingCard = CardDatabaseController.findCardById(Card.convertToCardId(card));
@@ -474,7 +476,7 @@ public class Fetcher
         List<WebElement> ListOfStockStatus = card.findElements(By.className("hawkStock"));
 
         int i = 0;
-
+        //for (WebElement e: ListOfPrices) System.out.println(e.getAttribute("innerText").trim());
         //Get the next available combination of foiling and condition and assign it to the next available price
         while (i < ListOfPrices.size()){
           for (int j=0; j<ListOfFoiling.size(); j++) {
@@ -482,7 +484,8 @@ public class Fetcher
             for (int k=0;k<ListOfConditions.size();k++) {
               //Add the next price with the next combination of NM and Foil available for the card
               condition = radioTable.get(0).get(k);
-              String strPrice = ListOfPrices.get(i).getText().trim();
+              String strPrice = ListOfPrices.get(i).getAttribute("innerText").trim();
+              //if (strPrice.equals("")) continue;
               double amount = Double.parseDouble(strPrice.replaceAll(java.util.regex.Matcher.quoteReplacement("CAD $"), "").replaceAll(",", ""));
               amountInStock = Integer.parseInt(ListOfStockStatus.get(i).getDomAttribute("data-stock-num"));
               //existingCard.addPrice(price, concurrentPrice, condition, amountInStock, foiling, fetchDate, fetcherSystem);

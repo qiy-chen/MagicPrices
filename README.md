@@ -1,7 +1,5 @@
 # MagicPrices
 
-WORKS ONLY FOR SAFARI BROWSERS FOR NOW
-
 Magic Prices Fetcher for Face To Face Games.
 
 Direct follow up to my previous project, MTG-TCG-Prices, written in Java instead of Python.
@@ -11,6 +9,8 @@ Direct follow up to my previous project, MTG-TCG-Prices, written in Java instead
  * PostgreSQL
  
  * Java
+ 
+ Note: To use Safari, remote automation must be enabled.
  
  ## Instructions on the installation of PostgreSQL
  
