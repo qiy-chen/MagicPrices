@@ -1,6 +1,6 @@
 # MagicPrices
 
-WORK ONLY FOR SAFARI BROWSERS FOR NOW
+WORKS ONLY FOR SAFARI BROWSERS FOR NOW
 
 Magic Prices Fetcher for Face To Face Games.
 
