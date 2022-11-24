@@ -94,11 +94,21 @@ public class CardDatabaseController {
     printCards(list);
   }
 
+  /**
+   * Search the repository for the cards containing the given id
+   * @param cardName - Id of the card for the search
+   * @return Card with the given id, null if not found
+   */
   public Card searchRepositoryById(String cardId) {
     Card card = cardRepository.findCardByCardId(cardId);
     return card;
   }
 
+  /**
+   * Search the repository for all cards containing the given name
+   * @param cardName - Name of the card for the search
+   * @return List of Card containing the given name
+   */
   public List<Card> searchRepositoryByName(String cardName) {
     List<Card> list = (List<Card>) cardRepository.findAll();
     List<Card> resultList = new ArrayList<Card>();
@@ -138,8 +148,8 @@ public class CardDatabaseController {
   }
 
   /**
-   * Give a list of cards of prices within specified time bounds and pricing options of a list of cards 
-   * @param cards - Cards to be printed
+   * Give a list of cards of prices within specified time boundaries (included) and pricing options of a list of cards 
+   * @param cards - List of Card to be filtered
    * @return - a list of cards with filtered prices
    */
   public List<Card> filterPrices(List<Card> cards,LocalDateTime oldestTime,LocalDateTime newestTime,List<String> condition,List<String> foiling) {
@@ -173,12 +183,28 @@ public class CardDatabaseController {
     return filteredCards;
   }
   
+  /**
+   * Give a list of Card containing only the prices within the given boundaries (included) with the specified condition and foiling
+   * @param cards - List of Card to be filtered
+   * @param oldestTime - Oldest LocalDateTime that prices can possess
+   * @param newestTime - Newest LocalDateTime that prices can possess
+   * @param condition - List of conditions, each value will be applied for each corresponding card (based on index)
+   * @param foiling - List of foiling, each value will be applied for each corresponding card (based on index)
+   * @return A list of Card containing only the prices within the given boundaries (included) with the specified condition and foiling
+   */
   public List<Card> getCardsPricesSpecific(List<Card> cards,LocalDateTime oldestTime,LocalDateTime newestTime,List<String> condition,List<String> foiling) {
     List<Card> filteredCards = new ArrayList<Card>();
     filteredCards = filterPrices(cards, oldestTime, newestTime, condition, foiling);
     return filteredCards;
   }
   
+  /**
+   * Give a list of Card containing only the most recent price with the specified condition and foiling
+   * @param listCards - List of Card to be filtered
+   * @param condition - List of conditions, each value will be applied for each corresponding card (based on index)
+   * @param foiling - List of foiling, each value will be applied for each corresponding card (based on index)
+   * @return A list of Card containing only the most recent price with the specified condition and foiling
+   */
   public List<Card> getCardsPricesMostRecent(List<Card> listCards,List<String> condition,List<String> foiling) {
     List<Card> filteredCards = new ArrayList<Card>();
     if (listCards.size() != condition.size() || listCards.size()!=foiling.size()) {
@@ -208,6 +234,10 @@ public class CardDatabaseController {
     priceRepository.deleteAll();
     cardRepository.deleteAll();
   }
+  
+  /**
+   * Clear all the prices in the repository
+   */
   public void clearPrices() {
     List<Card> list = (List<Card>) cardRepository.findAll();
     clearAllRepositories();
@@ -223,6 +253,10 @@ public class CardDatabaseController {
     }
   }
 
+  /**
+   * Clear all the prices of the card with given Id
+   * @param cardId - The id of the card
+   */
   public void clearPricesOfCard(String cardId) {
     Card card = cardRepository.findCardByCardId(cardId);
     if (card!=null) {
@@ -231,6 +265,10 @@ public class CardDatabaseController {
     }
   }
 
+  /**
+   * Print all the prices in a formatted way from a list of prices
+   * @param listPrices - list of Price
+   */
   public void printPrices(List<Price> listPrices) {
     printSeparator();
     System.out.println("Price\tIn Stock\tIs NM\tFoil\t\tDate");

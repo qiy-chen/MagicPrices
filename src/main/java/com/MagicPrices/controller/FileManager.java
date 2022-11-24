@@ -180,6 +180,11 @@ public class FileManager {
 
   }
   
+  /**
+   * Get the filename's extension
+   * @param filename Name of the file
+   * @return String representing the extension
+   */
   public String getExtensionByApacheCommonLib(String filename) {
     return FilenameUtils.getExtension(filename);
 }

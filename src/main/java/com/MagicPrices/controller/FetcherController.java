@@ -49,8 +49,9 @@ public class FetcherController {
    * @param aFastMode - Search only the first page if true
    * @param alooseSearch - the search will be as general as possible
    * @param driver - Current WebDriver instance
+   * @return true if successful, false otherwise
    */
-  public void fetchCardsByCardName(List<String> cardNameList, boolean aIsInStock, boolean aPreferedNMCondition, boolean aPreferedFoilCondition,boolean aFastMode, boolean alooseSearch,WebDriver driver) {
+  public boolean fetchCardsByCardName(List<String> cardNameList, boolean aIsInStock, boolean aPreferedNMCondition, boolean aPreferedFoilCondition,boolean aFastMode, boolean alooseSearch,WebDriver driver) {
 
     preferedInStock = aIsInStock;
     preferedNMCondition = aPreferedNMCondition;
@@ -59,20 +60,8 @@ public class FetcherController {
     looseSearch = alooseSearch;
     CardDatabaseController.printSeparator();
 
-    if (driver == null) {
-      System.out.println("Error, no web driver was started, please enter 'rd' to attempt to open a new web driver.");
-      return;
-    }
-
-    if(!updateConversionRate()) {
-      System.out.println("There were an error when updating the conversion rate.");
-      return;
-    }
-
-    if (updateCurrentTime() == null) {
-      System.out.println("There were an error when updating the current time.");
-      return;
-    }
+    if (!initializeFetching(driver)) return false;
+    
     for (String cardName: cardNameList) {
       //If string is empty, skip the search
       if (cardName.trim().equals("")) continue;
@@ -80,7 +69,7 @@ public class FetcherController {
       int pagenb = 1;
       boolean success = true;
       while (success) {
-        String url = generateURL(cardName, aIsInStock, aPreferedNMCondition, aPreferedFoilCondition, looseSearch, pagenb);
+        String url = generateURL(cardName, preferedInStock, preferedNMCondition, preferedFoilCondition, looseSearch, pagenb);
         System.out.println("Fetching card at "+url+"\nConversion: "+conversionRateUSDToCAD+"\tTime: "+currentTime.toString());
 
 
@@ -93,6 +82,7 @@ public class FetcherController {
       }
     }
     System.out.println("Search done. Enter 'pr' to print repository.");
+    return true;
   }
   /**
    * Fetch and upgrade prices related to a card by name using the website's search function
@@ -103,51 +93,42 @@ public class FetcherController {
    * @param aFastMode - Search only the first page if true
    * @param alooseSearch - the search will be as general as possible
    * @param driver - Current WebDriver instance
+   * @return true if successful, false otherwise
    */
-  public void fetchCardByCardName(String cardName, boolean aIsInStock, boolean aPreferedNMCondition, boolean aPreferedFoilCondition,boolean aFastMode, boolean alooseSearch,WebDriver driver) {
+  public boolean fetchCardByCardName(String cardName, boolean aIsInStock, boolean aPreferedNMCondition, boolean aPreferedFoilCondition,boolean aFastMode, boolean alooseSearch,WebDriver driver) {
     List<String> list = new ArrayList<String>();
     list.add(cardName);
-    fetchCardsByCardName(list,  aIsInStock,  aPreferedNMCondition,  aPreferedFoilCondition, aFastMode,  alooseSearch, driver);
+    return fetchCardsByCardName(list,  aIsInStock,  aPreferedNMCondition,  aPreferedFoilCondition, aFastMode,  alooseSearch, driver);
   }
 
   /**
    * Overload method for fetchCardByCardName with default boolean parameters and a loose search activated
    * @param cardName - Name of the card to be fetched and saved
    * @param driver - Current WebDriver instance
+   * @return true if successful, false otherwise
    */
-  public void fetchCardByCardName(String cardName,WebDriver driver) {
-    fetchCardByCardName(cardName,false,true,false,true,true,driver);
+  public boolean fetchCardByCardName(String cardName,WebDriver driver) {
+    return fetchCardByCardName(cardName,false,true,false,true,true,driver);
   }
 
   /**
    * Overload method for fetchCardsByCardName with default boolean parameters and a loose search activated
    * @param cardNames - List of names of cards to be fetched and saved
    * @param driver - Current WebDriver instance
+   * @return true if successful, false otherwise
    */
-  public void fetchCardsByCardName(List<String> cardNames,WebDriver driver) {
-    fetchCardsByCardName(cardNames,false,true,false,true,true,driver);
+  public boolean fetchCardsByCardName(List<String> cardNames,WebDriver driver) {
+    return fetchCardsByCardName(cardNames,false,true,false,true,true,driver);
   }
   
   /**
    * Fetch and upgrade prices related to a card by its id using the website's search function
    * @param listOfCardId - List of ids of the cards to be fetched and saved
    * @param driver - Current WebDriver instance
+   * @return true if successful, false otherwise
    */
-  public void fetchCardsByCardId(List<String> listOfCardId, WebDriver driver) {
-    if (driver == null) {
-      System.out.println("Error, no web driver was started, please enter 'rd' to attempt to open a new web driver.");
-      return;
-    }
-
-    if(!updateConversionRate()) {
-      System.out.println("There were an error when updating the conversion rate.");
-      return;
-    }
-
-    if (updateCurrentTime() == null) {
-      System.out.println("There were an error when updating the current time.");
-      return;
-    }
+  public boolean fetchCardsByCardId(List<String> listOfCardId, WebDriver driver) {
+    if (!initializeFetching(driver)) return false;
     for (String cardId: listOfCardId) {
       //If string is empty, skip the search
       if (cardId.trim().equals("")) continue;
@@ -169,22 +150,26 @@ public class FetcherController {
         }
         success = fetcher.fetchCardId(driver, cardId);
         fetcher.delete();
-        //Continue to search next pages if card not found and there are still some results
+        //Continue to search next pages if card not found and there are still some results in the page
         pagenb++;
       }
-      if(!success) System.out.println("Card with id "+cardId+" was not found");
+      if(!success) {
+        System.out.println("Card with id "+cardId+" was not found");
+      }
     }
+    return true;
   }
   
   /**
    * Fetch and upgrade prices related to a card by its id using the website's search function
    * @param cardId - The id of the cards to be fetched and saved
    * @param driver - Current WebDriver instance
+   * @return true if successful, false otherwise
    */
-  public void fetchCardByCardId(String cardId, WebDriver driver) {
+  public boolean fetchCardByCardId(String cardId, WebDriver driver) {
     List<String> list = new ArrayList<String>();
     list.add(cardId);
-    fetchCardsByCardId(list, driver);
+    return fetchCardsByCardId(list, driver);
   }
 
 
@@ -224,7 +209,7 @@ public class FetcherController {
   /**
    * Print a numbered list of all the cards found in a search url page
    * @param url -  url website (search page)
-   * @param driver - Current WebsiteDriver
+   * @param driver - Current WebDriver instance
    * @return - List of cards as WebElements found in the search url page
    */
   public List<WebElement> printPageFromURL(String url, WebDriver driver) {
@@ -289,6 +274,35 @@ public class FetcherController {
   public void setRepositories(CardRepository cardRepository, PriceRepository priceRepository) {
     this.cardRepository = cardRepository;
     this.priceRepository = priceRepository;
+  }
+  
+  /**
+   * Initialize every parameters necessary for the fetch request
+   * @param driver - Current WebDriver instance
+   * @return true if successful, false otherwise
+   */
+  public boolean initializeFetching(WebDriver driver) {
+    if (driver == null) {
+      System.out.println("Error, no web driver was started, please enter 'rd' to attempt to open a new web driver.");
+      return false;
+    }
+
+    if(!updateConversionRate()) {
+      System.out.println("There were an error when updating the conversion rate.");
+      return false;
+    }
+
+    if (updateCurrentTime() == null) {
+      System.out.println("There were an error when updating the current time.");
+      return false;
+    }
+    
+    if (cardRepository==null||priceRepository==null) {
+      System.out.println("Error, repositories for FetcherController not set.");
+      return false;
+    }
+    
+    return true;
   }
 
 }

@@ -48,7 +48,6 @@ public class MainController implements CommandLineRunner{
     system.setMainMenu(MainController.getMainMenu());
     MainController.getWebDriver();
     
-    //Scanner initialization, args[0] determine the input stream for the scanner
     Scanner inputReader = new Scanner(System.in);
     
     //Controllers initialization
@@ -525,43 +524,51 @@ public class MainController implements CommandLineRunner{
   }
 
   /**
-   * Print all available user commands.
+   * List of commands for the main menu
    */
   private void printHelp() {
     System.out.println("All commands: \n"
         + "Command\t\t\tAbrievated\tUsage\n"
         + "\nFETCH COMMANDS\n"
-        + "fetchallfast\t\tfaf\tFetch all the available price options from a card name search from the first page.\n"
-        + "fetchall\t\tfa\tFetch all the available price options from a card name search.\n"
+        + "fetchallfast\t\tfaf\tFetch all the available price options from a card name search in the first page.\n"
+        + "fetchall\t\tfa\tFetch all the available price options from a card name search in all search pages.\n"
         + "\nREPOSITORY COMMANDS\n"
         + "printrepository\t\tpr\tPrint all the cards in the repository.\n"
         + "searchbyid\t\tsbid\tSearch the repository by id.\n"
         + "searchbyname\t\tsbn\tSearch the repository by name.\n"
         + "clearallrepositories\t\tcar\tClear all repositories.\n"
         + "clearprices\t\tcp\tClear all registered prices.\n"
+        + "clearpricescard\t\tcpc\tClear all prices of a card.\n"
         + "\nFILES COMMANDS\n"
         + "filemanager\t\tfm\tEnter the file manager menu.\n"
         + "\nOTHER COMMANDS\n"
         + "restartdriver\t\trd\tRestart the web driver. Use it if the web driver hasn't started or if there are some issues with it.\n"
-        + "\\return\t\t\t\\r\tGo to previous menu.\n"
+        + "\\return\t\t\t\\r\tGo to previous menu or abort operation.\n"
         + "quit\t\t\tq\tClose the program.");
   }
+  /**
+   * List of commands for the file manager menu
+   */
   private void printHelpFileManager() {
     System.out.println("All file manager commands: \n"
         + "Command\t\t\tAbrievated\tUsage\n"
         + "createnewlist\t\tcnl\tCreate a list of cards from scratch.\n"
-        + "loadfrompath\t\tlfp\tRead all the files present in the input path (including files in subdirectories).\n"
-        + "printfile\t\tpf\tPrint the content of every file from a path.\n"
-        + "trackfile\t\ttf\tAdd to the repository the most recent prices from a list of cards.\n"
-        + "printrecentprices\tprp\tPrint the most recent prices listed by .idlist files\n"
-        + "printspecificprices\tpsp\tPrint all the prices listed by .idlist files that falls between two periods of time.\n"
-        + "outputrecentprices\torp\tCreate a text file containing informations on the most recent prices listed by .idlist files.\n"
-        + "addstatusfiles\t\tasf\tAppend at the end of each .idlist files the selected condition and foiling status of the card if not present previously.\n"
-        + "convertfile\t\tcf\tAttempt to convert each file into a .idlist file.\n"
+        + "loadfrompath\t\tlfp\tLoad all the files present in the input path (including files in subdirectories).\n"
+        + "printfile\t\tpf\tPrint the content of every file.\n"
+        + "trackfile\t\ttf\tAdd to the repository the most recent prices found online from cards in loaded .idlist files.\n"
+        + "printrecentprices\tprp\tPrint the most recent prices listed by loaded .idlist files.\n"
+        + "printspecificprices\tpsp\tPrint all the prices listed by loaded .idlist files that falls between two periods of time.\n"
+        + "outputrecentprices\torp\tCreate a text file containing informations on the most recent prices listed by loaded .idlist files.\n"
+        + "addstatusfiles\t\tasf\tAppend at the end of each loaded .idlist files the selected condition and foiling status of the card if not present previously.\n"
+        + "convertfile\t\tcf\tAttempt to convert each loaded file into a .idlist file.\n"
         + "help\t\t\th\tPrint all the commands available in the file manager menu.\n"
         + "\\return\t\t\t\\r\tGo to main menu."
         + "");
   }
+  /**
+   * Get the fetcherSystem, create one if it doesn't exists yet
+   * @return The FetcherSystem instance
+   */
   public static FetcherSystem getFetcherSystem() {
     if (system == null) {
       system = new FetcherSystem();
@@ -569,7 +576,10 @@ public class MainController implements CommandLineRunner{
     }
     return system;
   }
-
+  /**
+   * Get the mainMenu, create one if it doesn't exists yet
+   * @return The MainMenu instance
+   */
   public static MainMenu getMainMenu() {
     if (menu == null) {
       menu = new MainMenu(MainController.getFetcherSystem(), MainController.getCardDatabase());
@@ -578,6 +588,10 @@ public class MainController implements CommandLineRunner{
     return menu;
   }
 
+  /**
+   * Get the cardDatabaseController, create one if it doesn't exists yet
+   * @return The CardDatabaseController instance
+   */
   public static CardDatabase getCardDatabase() {
     if (database == null) {
       database = new CardDatabase(MainController.getFetcherSystem());
@@ -586,32 +600,37 @@ public class MainController implements CommandLineRunner{
     return database;
   }
 
+  /**
+   * Try to get an instance of a WebDriver
+   * @return An instance of WebDriver if possible
+   */
   public static WebDriver getWebDriver() {
-    if (driver == null) {
-      try {
-        WebDriverManager.chromedriver().setup();
-        driver = new ChromeDriver();
-      }
-      catch (Exception e){
-        try {
-          System.out.println(e);
-          System.out.println("Attempting to create another type of driver.");
-          driver = new SafariDriver();
-        }
-        catch (Exception e1){
+//    if (driver == null) {
+//      try {
+//        WebDriverManager.chromedriver().setup();
+//        driver = new ChromeDriver();
+//      }
+//      catch (Exception e){
+//        try {
+//          System.out.println(e);
+//          System.out.println("Attempting to create another type of driver.");
+//          WebDriverManager.firefoxdriver().setup();
+//          driver = new FirefoxDriver();
+//          
+//        }
+//        catch (Exception e1){
           try {
-            System.out.println(e1);
-            System.out.println("Attempting to create another type of driver.");
-            WebDriverManager.firefoxdriver().setup();
-            driver = new FirefoxDriver();
+            //System.out.println(e1);
+            //System.out.println("Attempting to create another type of driver.");
+            driver = new SafariDriver();
           }
           catch (Exception e2){
             System.out.println("Error when starting up web driver. Please check the error below.\nError message:");
             System.out.println(e2);
           }
-        }
-      }
-    }
+//        }
+//      }
+//    }
     return driver;
   }
 
