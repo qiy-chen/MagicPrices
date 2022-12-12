@@ -174,7 +174,7 @@ public class MainController implements CommandLineRunner{
         List<File> loadedFiles = new ArrayList<File>();
 
         while(inputReader.hasNext()) {
-          System.out.println("Pleaser enter your command. Enter \\return or \\r to go to the main menu. Press 'help' or 'h' to print all available commands.");
+          System.out.println("Please enter your command. Enter \\return or \\r to go to the main menu. Press 'help' or 'h' to print all available commands.");
           String command2 = inputReader.nextLine();
           //Exit file manager menu
           if (command2.equals("\\return")|command2.equals("\\r")) break;
