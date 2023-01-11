@@ -60,7 +60,7 @@ If downloaded directly from the GitHub repository, the application can be run by
 | filemanager  | fm  | Enter the file manager menu. |
 | OTHER COMMANDS |
 | restartdriver  | rd  | Restart the web driver. Use it if the web driver hasn't started or if there are some issues with it. |
-| \return  | \r  | Go to previous menu or abort operation. |
+| \return  | \r  | Go to the previous menu or abort operation. |
 | quit  | q  | Close the program. |
 
 ### File Manager Menu
@@ -72,9 +72,9 @@ If downloaded directly from the GitHub repository, the application can be run by
 | printfile  | pf  | Print the content of every loaded file. |
 | trackfile  | tf  | Add to the repository the most recent prices found online from cards in loaded .idlist files. |
 | printrecentprices  | prp  | Print the most recent prices listed by loaded .idlist files. |
-| printspecificprices  | psp  | Print all the prices listed by loaded .idlist files that falls between two periods of time (included). |
-| outputrecentprices  | orp  | Create a text file containing informations on the most recent prices listed by loaded .idlist files. |
+| printspecificprices  | psp  | Print all the prices listed by loaded .idlist files bounded between two periods of time (included). |
+| outputrecentprices  | orp  | Generate an easy to read csv file containing information on the most recent prices listed by loaded .idlist files. |
 | addstatusfiles  | asf  | Append at the end of each loaded .idlist files the selected condition and foiling status of the card if not present previously. |
 | convertfile  | cf  | Attempt to convert each loaded file into a .idlist file. |
 | help  | h  | Print all the commands available in the file manager menu. |
-| \return  | \r  | Go to main menu. |
+| \return  | \r  | Go to the main menu. |

@@ -366,7 +366,7 @@ public class Fetcher
     WebDriverWait driverWait = new WebDriverWait(driver, Duration.ofSeconds(10));
     //Check if text box shows 'No Results'
     WebElement results = driverWait.until(ExpectedConditions.presenceOfElementLocated(By.className("hawk-results")));
-    System.out.println(results.getText());
+    //System.out.println(results.getText());
     boolean noResult = (results.getAttribute("innerText").trim().contains("No Results"));
     //Check if text box shows '0 search results for XXX'
     WebElement resultsNb = driverWait.until(ExpectedConditions.presenceOfElementLocated(By.className("hawk__results-title")));

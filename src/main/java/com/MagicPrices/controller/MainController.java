@@ -435,23 +435,20 @@ public class MainController implements CommandLineRunner{
               List<Card> listCards = cardDatabaseController.getCardsPricesMostRecent(listCard, conditionList, foilingList);
 
               List<String> listCardsAppendedPrice = new ArrayList<String>();
-              listCardsAppendedPrice.add("Generated at "+LocalDateTime.now());
+              listCardsAppendedPrice.add("Generated on "+LocalDateTime.now());
+              listCardsAppendedPrice.add("Name"+","+"Set"+","+"Price"+","+"Stock"+","+"Condition"+","+"Foiling");
               double totalPrice = 0;
               int nbCards = listCards.size();
               for (Card c: listCards) {
                 Price cardPrice = c.getPrice(0);
-                String nameAndSet = c.getName()+"|"+c.getCategory();
-                int nbTabs = 7-(nameAndSet.length())/8;
-                //Prevent negative number of tabs
-                if (nbTabs<0) nbTabs = 0;
-                String tabs = new String(new char[nbTabs]).replace("\0", "\t");
-                listCardsAppendedPrice.add(nameAndSet+tabs+"Price: "+cardPrice.getAmount()+"\t\t"+"Stock: "+cardPrice.getAmountInStock()+"\t"+cardPrice.getCondition()+"|"+cardPrice.getFoiling());
+                listCardsAppendedPrice.add(""+c.getName().replaceAll(",", " ")+","+c.getCategory().replaceAll(",", " ")+","+cardPrice.getAmount()+","+cardPrice.getAmountInStock()+","+cardPrice.getCondition()+","+cardPrice.getFoiling());
                 totalPrice+=c.getPrice(0).getAmount();
               }
               totalPrice = Math.round(totalPrice * 100);
               totalPrice = totalPrice/100;
-              listCardsAppendedPrice.add("Total :"+totalPrice+"CAD"+"\tFor "+nbCards+" cards");
-              fileManager.saveFile(listCardsAppendedPrice, filePath, ".txt");
+              listCardsAppendedPrice.add("Total Price"+","+totalPrice);
+              listCardsAppendedPrice.add("Cards:"+","+nbCards);
+              fileManager.saveFile(listCardsAppendedPrice, filePath, ".csv");
             }
             setEndTime(command2);
           }
@@ -547,7 +544,7 @@ public class MainController implements CommandLineRunner{
         + "filemanager\t\tfm\tEnter the file manager menu.\n"
         + "\nOTHER COMMANDS\n"
         + "restartdriver\t\trd\tRestart the web driver. Use it if the web driver hasn't started or if there are some issues with it.\n"
-        + "\\return\t\t\t\\r\tGo to previous menu or abort operation.\n"
+        + "\\return\t\t\t\\r\tGo to the previous menu or abort operation.\n"
         + "quit\t\t\tq\tClose the program.");
   }
   /**
@@ -561,12 +558,12 @@ public class MainController implements CommandLineRunner{
         + "printfile\t\tpf\tPrint the content of every file.\n"
         + "trackfile\t\ttf\tAdd to the repository the most recent prices found online from cards in loaded .idlist files.\n"
         + "printrecentprices\tprp\tPrint the most recent prices listed by loaded .idlist files.\n"
-        + "printspecificprices\tpsp\tPrint all the prices listed by loaded .idlist files that falls between two periods of time.\n"
-        + "outputrecentprices\torp\tCreate a text file containing informations on the most recent prices listed by loaded .idlist files.\n"
+        + "printspecificprices\tpsp\tPrint all the prices listed by loaded .idlist files bounded between two periods of time.\n"
+        + "outputrecentprices\torp\tGenerate an easy to read csv file containing information on the most recent prices listed by loaded .idlist files.\n"
         + "addstatusfiles\t\tasf\tAppend at the end of each loaded .idlist files the selected condition and foiling status of the card if not present previously.\n"
         + "convertfile\t\tcf\tAttempt to convert each loaded file into a .idlist file.\n"
         + "help\t\t\th\tPrint all the commands available in the file manager menu.\n"
-        + "\\return\t\t\t\\r\tGo to main menu."
+        + "\\return\t\t\t\\r\tGo to the main menu."
         + "");
   }
   /**
