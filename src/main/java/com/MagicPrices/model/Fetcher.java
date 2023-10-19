@@ -4,7 +4,6 @@
 package com.MagicPrices.model;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import com.MagicPrices.controller.CardDatabaseController;
 import com.MagicPrices.repository.CardRepository;
 import com.MagicPrices.repository.PriceRepository;
 import java.util.ArrayList;
@@ -15,7 +14,6 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 // line 57 "../../../Fetcher.ump"
 public class Fetcher

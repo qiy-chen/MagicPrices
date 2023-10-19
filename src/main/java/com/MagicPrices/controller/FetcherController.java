@@ -1,26 +1,22 @@
 package com.MagicPrices.controller;
 
-import com.MagicPrices.MagicPricesApplication;
 import com.MagicPrices.model.Card;
 import com.MagicPrices.model.CardDatabase;
 import com.MagicPrices.model.Fetcher;
 import com.MagicPrices.model.FetcherSystem;
 import com.MagicPrices.model.MainMenu;
-import com.MagicPrices.model.Price;
 import com.MagicPrices.repository.CardRepository;
 import com.MagicPrices.repository.PriceRepository;
 import com.gargoylesoftware.htmlunit.*;
 import com.gargoylesoftware.htmlunit.html.*;
 import com.gargoylesoftware.htmlunit.javascript.SilentJavaScriptErrorListener;
 import java.io.IOException;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import com.MagicPrices.controller.CardDatabaseController;
 
 public class FetcherController {
 

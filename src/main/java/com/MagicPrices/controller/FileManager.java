@@ -10,21 +10,14 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 import org.apache.commons.io.FilenameUtils;
-import com.MagicPrices.model.CardDatabase;
-import com.MagicPrices.model.FetcherSystem;
-import com.MagicPrices.model.MainMenu;
 
 
 
 
 public class FileManager {
-  private FetcherSystem system = MainController.getFetcherSystem();
-  private MainMenu menu = MainController.getMainMenu();
-  private CardDatabase database = MainController.getCardDatabase();
   public FileManager() {}
 
   /**
@@ -63,7 +56,6 @@ public class FileManager {
     boolean success = false;
     List<String> lines = new ArrayList<String>(userList);
     new File(path).mkdirs();
-    String date = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS).toString().replaceAll(":", "-");
     Path file = Paths.get(path);
     try {
       Files.write(file, lines, StandardCharsets.UTF_8);

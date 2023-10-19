@@ -3,7 +3,6 @@
 
 package com.MagicPrices.model;
 import java.util.*;
-import java.io.Serializable;
 
 // line 211 "../../../Fetcher.ump"
 public class CardDatabase implements java.io.Serializable

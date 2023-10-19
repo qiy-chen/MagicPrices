@@ -1,13 +1,10 @@
 package com.MagicPrices.controller;
 
-import java.lang.reflect.Array;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.hibernate.Hibernate;
-import org.springframework.transaction.annotation.Transactional;
 import com.MagicPrices.model.Card;
 import com.MagicPrices.model.CardDatabase;
 import com.MagicPrices.model.FetcherSystem;

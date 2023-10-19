@@ -2,7 +2,6 @@
 /*This code was generated using the UMPLE 1.31.1.5860.78bb27cc6 modeling language!*/
 
 package com.MagicPrices.model;
-import java.time.LocalDateTime;
 
 // line 19 "../../../Fetcher.ump"
 public class MainMenu

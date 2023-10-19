@@ -12,7 +12,6 @@ import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Transient;
-import java.io.Serializable;
 
 // line 29 "../../../Fetcher.ump"
 @Entity

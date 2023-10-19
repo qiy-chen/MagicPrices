@@ -9,7 +9,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
-import java.io.Serializable;
 
 // line 197 "../../../Fetcher.ump"
 @Entity
